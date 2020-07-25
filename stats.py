@@ -24,4 +24,4 @@ class KnowledgeBook:
             for nextPattern in counter:
                 prob = self.getProbOfNextPattern(pattern, nextPattern)
                 strFigures.append(f'{nextPattern}({prob:.0%})')
-            print(pattern, *strFigures)
+            print(pattern, *sorted(strFigures))
