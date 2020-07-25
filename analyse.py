@@ -1,11 +1,14 @@
 from renko import loadSequence
 from stats import KnowledgeBook
 
+FILE_NAME = 'eurgbp_50.txt'
+FUTURE_LEN = 1
+
 if __name__ == '__main__':
     pastLen = int(input())
-    futureLen = 1
+    futureLen = FUTURE_LEN
     blockLen = pastLen + futureLen
-    renko = loadSequence('eurgbp',50)
+    renko = loadSequence(FILE_NAME)
     book = KnowledgeBook()
     
     for i in range(len(renko) - blockLen):
