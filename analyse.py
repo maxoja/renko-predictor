@@ -1,10 +1,8 @@
-from renko import UP_BOX, DOWN_BOX, loadSequence
-from labeling import Criteria, LABEL_UP, LABEL_DOWN, LABEL_SIDE
-from stats import PatternStats, KnowledgeBook
+from renko import loadSequence
+from stats import KnowledgeBook
 
 if __name__ == '__main__':
-    criteria = Criteria(tp=2,sl=1)
-    labelWinSize = 8
+    labelWinSize = 1
     predWinSize = int(input())
     renko = loadSequence('eurgbp',50)
     book = KnowledgeBook()
@@ -19,13 +17,7 @@ if __name__ == '__main__':
         labelHead = featureTail
         labelTail = labelHead + labelWinSize
         labelingPattern = renko[labelHead:labelTail]
-        label = criteria.getLabel(labelingPattern)
         
-        book.updateKnowledge(featurePattern, label)
+        book.includeSample(featurePattern, labelingPattern)
 
-    book.showStatsAll(criteria.getProfitableThreshold(), skip=True)
-
-    print(f'{book.total_up} {book.total_down} {book.total_up/(book.total_up+book.total_down):.0%} threshold {criteria.getProfitableThreshold():.0%}')
-
-    while True:
-        book.showStats(input(), criteria.getProfitableThreshold())
+    book.showAllInfo()
