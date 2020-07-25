@@ -2,26 +2,26 @@ from collections import Counter
 
 class KnowledgeBook:
     def __init__(self):
-        self.counterOfPattern = dict()
+        self.counterOf = dict()
         
-    def includeSample(self, pattern, nextPattern):
-        if not pattern in self.counterOfPattern:
-            self.counterOfPattern[pattern] = Counter({nextPattern:1})
+    def includeSample(self, pattern, next):
+        if not pattern in self.counterOf:
+            self.counterOf[pattern] = Counter({next:1})
         else:
-            self.counterOfPattern[pattern] += Counter({nextPattern:1})
+            self.counterOf[pattern] += Counter({next:1})
     
-    def getProbOfNextPattern(self, pattern, nextPattern):
-        counter = self.counterOfPattern[pattern]
-        return counter[nextPattern]/sum(counter.values())
+    def getProbOfNextPattern(self, pattern, next):
+        counter = self.counterOf[pattern]
+        return counter[next]/sum(counter.values())
 
     def getPatternOccurrence(self, pattern):
-        counter = self.counterOfPattern[pattern]
+        counter = self.counterOf[pattern]
         return sum(counter.values())
 
     def showAllInfo(self):
-        for pattern, counter in self.counterOfPattern.items():
-            line = pattern + ' '
+        for pattern, counter in self.counterOf.items():
+            strFigures = []
             for nextPattern in counter:
                 prob = self.getProbOfNextPattern(pattern, nextPattern)
-                line += f'{nextPattern}({prob:.0%}) '
-            print(line)
+                strFigures.append(f'{nextPattern}({prob:.0%})')
+            print(pattern, *strFigures)
