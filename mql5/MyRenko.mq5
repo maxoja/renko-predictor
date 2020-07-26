@@ -18,10 +18,10 @@ double boxSize;
 int OnInit()
   {
 //--- indicator buffers mapping
-   if (InpBoxSizePoint >= 50)
+   if (InpBoxSizePoint >= 25)
       boxSize = InpBoxSizePoint * Point();
    else
-      boxSize = 50 * Point();
+      boxSize = 25 * Point();
       
 //--- indicator buffers mapping
    SetIndexBuffer(0, lineBuffer, INDICATOR_DATA);
@@ -55,11 +55,24 @@ int OnCalculate(const int rates_total,
          continue;
       }
          
+         double prevColor = colorBuffer[i+shiftPrev];
          double pivot = lineBuffer[i+shiftPrev];
          double distance = price[i] - pivot;
          int step = distanceToStep(distance);
          
-         if(step == 0) {
+         bool clicked = false;
+         
+         if (prevColor == 1 && (step >= 1 || step <= -2)) {
+            clicked = true;
+         }
+         if (prevColor == 2 && (step <= -1 || step >= 2)) {
+            clicked = true;
+         } 
+         if (prevColor == 0 && (step <= -1 || step >= 1)) {
+            clicked = true;
+         }
+         
+         if(!clicked) {
             lineBuffer[i] = lineBuffer[i+shiftPrev];
             colorBuffer[i] = colorBuffer[i+shiftPrev];
             continue;
@@ -71,7 +84,6 @@ int OnCalculate(const int rates_total,
             colorBuffer[i] = 1;
          else
             colorBuffer[i] = 2;
-         
       }
 
 //--- return value of prev_calculated for next call
