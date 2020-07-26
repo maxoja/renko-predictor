@@ -1,7 +1,7 @@
 from renko import loadSequence
 from stats import KnowledgeBook, State, Action, POSITION_NONE
 
-FILE_NAME = 'eurgbp_50.txt'
+FILE_NAME = 'test_1.txt'
 FUTURE_LEN = 1
 
 def craftBook(filename, pastLen, futureLen):
