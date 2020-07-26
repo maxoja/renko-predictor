@@ -18,6 +18,8 @@ double boxSize;
 
 int OnInit()
   {
+   if(_Period != PERIOD_M1)
+      Alert("This script will only export data on M1 chart");
 //--- indicator buffers mapping
    if (InpBoxSizePoint >= 25)
       boxSize = InpBoxSizePoint * Point();
@@ -111,7 +113,7 @@ int distanceToStep(double distance) {
 
 string sequence = "+----++++++---++---++";
 void OnDeinit(const int reason) {
-   if(!InpProduceSequence)
+   if(!InpProduceSequence || _Period != PERIOD_M1)
       return;
       
    sequence = "";
