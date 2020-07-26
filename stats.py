@@ -96,13 +96,13 @@ class Action:
         if actionType == ACTION_NONE:
             return currentPosition
 
-        if actionType == ACTION_BULL and currentPosition == POSITION_NONE:
+        if (actionType, currentPosition) == (ACTION_BULL, POSITION_NONE):
             return POSITION_BULL
 
-        if actionType == ACTION_BEAR and currentPosition == POSITION_NONE:
+        if (actionType, currentPosition) == (ACTION_BEAR, POSITION_NONE):
             return POSITION_BEAR
 
-        if actionType == ACTION_CLOSE and currentPosition == (POSITION_BULL or currentPosition == POSITION_BEAR):
+        if actionType == ACTION_CLOSE and currentPosition in [POSITION_BULL, POSITION_BEAR]:
             return POSITION_NONE
 
         return POSITION_INVALID
