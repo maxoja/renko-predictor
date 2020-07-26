@@ -127,11 +127,22 @@ void OnDeinit(const int reason) {
       PrintFormat("file is available for writing");
       PrintFormat("File path: %s\\Files\\",TerminalInfoString(TERMINAL_DATA_PATH));
       //--- first, write the number of signals
+      FileWrite(fileHandle, "created", TimeCurrent(), "len", StringLen(sequence));
+      FileWrite(fileHandle, "range", getStartRange(), getEndRange()); 
       FileWrite(fileHandle,sequence);
+      
       //--- close the file
       FileClose(fileHandle);
       PrintFormat("Data is written, file is closed");
      }
    else
       PrintFormat("Failed to open file, Error code = %d",GetLastError());
+}
+
+datetime getStartRange() {
+   return iTime(_Symbol,_Period,iBars(_Symbol,_Period)-1);
+}
+
+datetime getEndRange() {
+   return iTime(_Symbol,_Period,0);
 }
