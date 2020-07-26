@@ -4,7 +4,7 @@ from stats import KnowledgeBook
 FILE_NAME = 'eurgbp_50.txt'
 FUTURE_LEN = 1
 
-def createBook(filename, pastLen, futureLen):
+def craftBook(filename, pastLen, futureLen):
     blockLen = pastLen + futureLen
     renko = loadSequence(FILE_NAME)
     book = KnowledgeBook()
@@ -24,4 +24,4 @@ def createBook(filename, pastLen, futureLen):
     return book
 
 if __name__ == '__main__':
-    book = createBook(FILE_NAME, int(input()), FUTURE_LEN)
+    book = craftBook(FILE_NAME, int(input()), FUTURE_LEN)
