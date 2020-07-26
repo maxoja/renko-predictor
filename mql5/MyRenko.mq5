@@ -133,8 +133,8 @@ void OnDeinit(const int reason) {
       PrintFormat("file is available for writing");
       PrintFormat("File path: %s\\Files\\",TerminalInfoString(TERMINAL_DATA_PATH));
       //--- first, write the number of signals
-      FileWrite(fileHandle, "created", TimeCurrent(), "len", StringLen(sequence));
-      FileWrite(fileHandle, "range", getStartRange(), getEndRange()); 
+      FileWrite(fileHandle, "created", TimeCurrent(), "len", StringLen(sequence), "LSnap", InpUseLargeSnap);
+      FileWrite(fileHandle, "bSize", InpBoxSizePoint, "tf", _Period, "range", getStartRange(), getEndRange()); 
       FileWrite(fileHandle,sequence);
       
       //--- close the file
