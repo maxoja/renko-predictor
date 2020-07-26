@@ -7,8 +7,9 @@
 //+------------------------------------------------------------------+
 //| Custom indicator initialization function                         |
 //+------------------------------------------------------------------+
-input int InpBoxSizePoint = 100;
-input bool InpProduceSequence = false;
+input bool InpUseLargeSnap = true;
+input int InpBoxSizePoint = 50;
+input bool InpProduceSequence = true;
 input string InpFileName = "default.txt";
 
 double lineBuffer[];
@@ -55,13 +56,17 @@ int OnCalculate(const int rates_total,
          continue;
       }
          
-         double prevColor = colorBuffer[i+shiftPrev];
-         double pivot = lineBuffer[i+shiftPrev];
-         double distance = price[i] - pivot;
-         int step = distanceToStep(distance);
-         
-         bool clicked = false;
-         
+      double prevColor = colorBuffer[i+shiftPrev];
+      double pivot = lineBuffer[i+shiftPrev];
+      double distance = price[i] - pivot;
+      int step = distanceToStep(distance);
+      
+      bool clicked = false;
+      
+      if (!InpUseLargeSnap) {
+         if(step != 0)
+            clicked = true;
+      } else {
          if (prevColor == 1 && (step >= 1 || step <= -2)) {
             clicked = true;
          }
@@ -71,20 +76,21 @@ int OnCalculate(const int rates_total,
          if (prevColor == 0 && (step <= -1 || step >= 1)) {
             clicked = true;
          }
-         
-         if(!clicked) {
-            lineBuffer[i] = lineBuffer[i+shiftPrev];
-            colorBuffer[i] = colorBuffer[i+shiftPrev];
-            continue;
-         }
-         
-         lineBuffer[i] = pivot + step*boxSize;
-         
-         if(step > 0)
-            colorBuffer[i] = 1;
-         else
-            colorBuffer[i] = 2;
       }
+      
+      if(!clicked) {
+         lineBuffer[i] = lineBuffer[i+shiftPrev];
+         colorBuffer[i] = colorBuffer[i+shiftPrev];
+         continue;
+      }
+      
+      lineBuffer[i] = pivot + step*boxSize;
+      
+      if(step > 0)
+         colorBuffer[i] = 1;
+      if(step < 0)
+         colorBuffer[i] = 2;
+   }
 
 //--- return value of prev_calculated for next call
    return(rates_total);
