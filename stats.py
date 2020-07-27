@@ -1,5 +1,9 @@
 from collections import Counter
 
+GET_MONEYZ = 1
+NO_EFFECT = 0
+LOSE_MONEYZ = -1
+
 class KnowledgeBook:
     def __init__(self):
         self.counterOf = dict()
@@ -86,10 +90,10 @@ ALL_ACTIONS = [ACTION_NONE, ACTION_BULL, ACTION_BEAR, ACTION_CLOSE]
 class Action:
     cached = dict()
 
-    def __init__(self, currentState, actionType, outcomes:dict):
+    def __init__(self, currentState, actionType, validOutcomes:dict):
         self.fromState = currentState
         self.type = actionType
-        self.outcomes = outcomes
+        self.validOutcomes = validOutcomes
     
     @staticmethod
     def getResultPositionStatus(currentPosition, actionType):
