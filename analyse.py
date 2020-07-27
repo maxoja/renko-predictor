@@ -42,7 +42,7 @@ def recurseAction(action:Action, depthTillStop:int):
             recurse(state, depthTillStop-1)
 
 
-def recurse(stateOrAction, depthTillStop=1):
+def getActionUtility(stateOrAction, depthTillStop=1):
 
     if isinstance(stateOrAction, State):
         recurseState(stateOrAction, depthTillStop)
