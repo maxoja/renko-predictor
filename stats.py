@@ -30,10 +30,10 @@ class KnowledgeBook:
                 strFigures.append(f'{nextPattern}({prob:.0%})')
             print(pattern, *sorted(strFigures), self.getPatternOccurrence(pattern))
 
-POSITION_NONE = 0
-POSITION_BULL = 1
-POSITION_BEAR = -1
-POSITION_INVALID = 2
+POSITION_NONE = 'POSITION_NONE' 
+POSITION_BULL = 'POSITION_BULL' 
+POSITION_BEAR = 'POSITION_BEAR' 
+POSITION_INVALID = 'POSITION_INVALID'
 
 class State:
     cached = dict()
@@ -81,10 +81,10 @@ class State:
         State.cached[(pattern, position)] = state
 
 
-ACTION_NONE = 0
-ACTION_BULL = 1
-ACTION_BEAR = -1
-ACTION_CLOSE = 2
+ACTION_NONE = 'ACTION_NONE'
+ACTION_BULL = 'ACTION_BULL'
+ACTION_BEAR = 'ACTION_BEAR'
+ACTION_CLOSE = 'ACTION_CLOSE'
 ALL_ACTIONS = [ACTION_NONE, ACTION_BULL, ACTION_BEAR, ACTION_CLOSE]
 
 class Action:

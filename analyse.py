@@ -40,6 +40,7 @@ def getActionUtility(action: Action, accPattern: str, remainingDepth):
     actionType = action.type
 
     if remainingDepth == 0:
+        # print('\t'*(STEPS - remainingDepth-1),'-')
         return _calculateRewardFromPattern(currentPosition, accPattern)
 
     utilOfAction = 0
@@ -49,37 +50,50 @@ def getActionUtility(action: Action, accPattern: str, remainingDepth):
         newPosition = newState.position
 
         nextActions = newState.actions
-        utilOfBranches = []
+        utilOfActionBranches = []
+        print('\t'*(STEPS - remainingDepth), '-'*10)
         for ac in nextActions:
             if ac.type == ACTION_CLOSE:
-                utilOfBranches.append(getActionUtility(ac,
+                utilOfActionBranches.append(getActionUtility(ac,
                                                  accPattern+newPattern[-FUTURE_LEN:], 0))
+            elif newPosition == POSITION_NONE:
+                utilOfActionBranches.append(getActionUtility(ac, '', remainingDepth-1))
             else:
-                utilOfBranches.append(getActionUtility(ac, accPattern +
+                utilOfActionBranches.append(getActionUtility(ac, accPattern +
                                                  newPattern[-FUTURE_LEN:], remainingDepth-1))
+            print('\t'*(STEPS - remainingDepth), ac.type, f'{utilOfActionBranches[-1]:.3f}')
+        maxUtil = max(utilOfActionBranches)
+        maxIndex = utilOfActionBranches.index(maxUtil)
+        utilOfAction += prob * maxUtil
 
-        utilOfAction += prob * max(utilOfBranches)
 
+        print('\t'*(STEPS - remainingDepth), f'(choose {nextActions[maxIndex].type}) {maxUtil:.3f}')
+        if remainingDepth == STEPS:
+            print("xxxxx")
+        # print('\t'*(STEPS - remainingDepth), nextActions[maxIndex].type, f'{maxUtil:.3f}')
+    # print(len(action.validOutcomes.items()))
     return utilOfAction
 
 
+STEPS = 5
 if __name__ == '__main__':
     print('file', FILE_NAME)
-    while True:
-        PAST_LEN = int(input())
-        book = craftBook(FILE_NAME, PAST_LEN, FUTURE_LEN, True)
-        for startPattern in ['+'*PAST_LEN]:  # book.counterOf.keys():
-            startState = State.create(book, startPattern, POSITION_NONE)
-            u = getActionUtility(Action.create(
-                book, startState, ACTION_BULL), '', 1)
-            print()
-            d = getActionUtility(Action.create(
-                book, startState, ACTION_BEAR), '', 1)
-            print()
-            n = getActionUtility(Action.create(
-                book, startState, ACTION_NONE), '', 1)
-            print()
-            o = book.getPatternOccurrence(startPattern)
-            print(
-                f'{startPattern} : bull {u: 4.2f}    bear {d: 4.2f}    none {n: 4.2f}    ({o})')
-        print('-'*20)
+    # while True:
+    PAST_LEN = 2# int(input())
+    book = craftBook(FILE_NAME, PAST_LEN, FUTURE_LEN, True)
+    for startPattern in ["+"*PAST_LEN]: #book.counterOf.keys():
+        startState = State.create(book, startPattern, POSITION_NONE)
+        # u = getActionUtility(Action.create(
+        #     book, startState, ACTION_BULL), '', STEPS)
+        # print()
+        # d = getActionUtility(Action.create(
+        #     book, startState, ACTION_BEAR), '', STEPS)
+        # print()
+        n = getActionUtility(Action.create(
+            book, startState, ACTION_NONE), '', STEPS)
+        print()
+        o = book.getPatternOccurrence(startPattern)
+        # print(
+        #     f'{startPattern} : bull {u: 4.2f}    bear {d: 4.2f}    none {n: 4.2f}    ({o})')
+        # print(f'{startPattern} : none {n: 4.2f}')
+    print('-'*20)
