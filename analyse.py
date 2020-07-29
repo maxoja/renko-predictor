@@ -36,7 +36,10 @@ def _calculateRewardFromPattern(positionType, accPattern: str):
 
 
 DEBUG = False
-def getActionUtility(action: Action, accPattern: str, remainingDepth):
+def getActionUtility(action: Action, accPattern: str, remainingDepth, cacheTable = {}):
+    if (action, accPattern, remainingDepth) in cacheTable:
+        return cacheTable[(action, accPattern, remainingDepth)]
+
     currentPosition = action.fromState.position
 
     if remainingDepth == 0:
@@ -71,6 +74,8 @@ def getActionUtility(action: Action, accPattern: str, remainingDepth):
             print('\t'*(UTIL_DEPTH - remainingDepth), newState.pattern[-1], f'(choose {bestAction.type}) {maxUtil:.3f} * {prob:.3f}')
             if remainingDepth == UTIL_DEPTH:
                 print("="*20)
+
+    cacheTable[(action, accPattern, remainingDepth)] = utilOfAction
     return utilOfAction
 
 
@@ -102,7 +107,7 @@ if __name__ == '__main__':
     FILE_NAME = argv[1]
     PAST_LEN = 5
     FUTURE_LEN = 3
-    UTIL_DEPTH = 4
+    UTIL_DEPTH = 7
     print(f'FILE {FILE_NAME} --- WINDOW ({PAST_LEN},{FUTURE_LEN}) --- UTIL_DEPTH {UTIL_DEPTH} --- DEBUG {DEBUG}\n')
     book = craftBook(FILE_NAME, PAST_LEN, FUTURE_LEN, True)
 
