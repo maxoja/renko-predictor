@@ -1,3 +1,5 @@
+from sys import argv
+
 from renko import *
 from stats import *
 
@@ -21,6 +23,7 @@ def craftBook(filename, pastLen, futureLen, showTable=True):
     if showTable:
         book.showAllInfo()
         print()
+
     return book
 
 
@@ -29,13 +32,11 @@ def _calculateRewardFromPattern(positionType, accPattern: str):
         return NO_EFFECT
     x = sum([GET_MONEYZ if x == UP_BOX else LOSE_MONEYZ for x in accPattern]
             ) * (-1 if positionType == POSITION_BEAR else 1)
-    # print(format(positionType, "4d"), accPattern, x)
     return x
 
 
 def getActionUtility(action: Action, accPattern: str, remainingDepth):
     currentPosition = action.fromState.position
-    actionType = action.type
 
     if remainingDepth == 0:
         return _calculateRewardFromPattern(currentPosition, accPattern)
@@ -58,37 +59,41 @@ def getActionUtility(action: Action, accPattern: str, remainingDepth):
                 utilOfActionBranches.append(getActionUtility(ac, accPattern +
                                                  newPattern[-FUTURE_LEN:], remainingDepth-1))
             if DEBUG:
-                print('\t'*(STEPS - remainingDepth), ac.type, f'{utilOfActionBranches[-1]:.3f}')
-        maxUtil = max(utilOfActionBranches)
-        maxIndex = utilOfActionBranches.index(maxUtil)
+                print('\t'*(UTIL_DEPTH - remainingDepth), ac.type, f'{utilOfActionBranches[-1]:.3f}')
+
+        maxIndex = _argmax(utilOfActionBranches)
+        maxUtil = utilOfActionBranches[maxIndex]
+        bestAction = nextActions[maxIndex]
         utilOfAction += prob * maxUtil
 
         if DEBUG:
-            print('\t'*(STEPS - remainingDepth), newState.pattern[-1], f'(choose {nextActions[maxIndex].type}) {maxUtil:.3f} * {prob:.3f}')
-            if remainingDepth == STEPS:
+            print('\t'*(UTIL_DEPTH - remainingDepth), newState.pattern[-1], f'(choose {bestAction.type}) {maxUtil:.3f} * {prob:.3f}')
+            if remainingDepth == UTIL_DEPTH:
                 print("="*20)
     return utilOfAction
 
-FILE_NAME = 'audnzd_100_small.txt'
-FUTURE_LEN = 3  # this is not adjustablel for the moment
-PAST_LEN = 5# int(input())
-STEPS = 4
-DEBUG = False
+
+def _argmax(l:list):
+    return max(range(len(l)), key=lambda x:l[x])
+
 if __name__ == '__main__':
-    print('file', FILE_NAME)
-    # while True:
+    FILE_NAME = argv[1]
+    PAST_LEN = 5
+    FUTURE_LEN = 3
+    UTIL_DEPTH = 4
+    DEBUG = False
+    print(f'FILE {FILE_NAME} --- WINDOW ({PAST_LEN},{FUTURE_LEN}) --- UTIL_DEPTH {UTIL_DEPTH} --- DEBUG {DEBUG}\n')
     book = craftBook(FILE_NAME, PAST_LEN, FUTURE_LEN, True)
     # for startPattern in ["+"*PAST_LEN]:
     for startPattern in book.counterOf.keys():
         u, d, n = 9.99, 9.99, 9.99
         startState = State.create(book, startPattern, POSITION_NONE)
         u = getActionUtility(Action.create(
-            book, startState, ACTION_BULL), '', STEPS)
+            book, startState, ACTION_BULL), '', UTIL_DEPTH)
         d = getActionUtility(Action.create(
-            book, startState, ACTION_BEAR), '', STEPS)
+            book, startState, ACTION_BEAR), '', UTIL_DEPTH)
         n = getActionUtility(Action.create(
-            book, startState, ACTION_NONE), '', STEPS)
-        # print()
+            book, startState, ACTION_NONE), '', UTIL_DEPTH)
         o = book.getPatternOccurrence(startPattern)
         maxVal = max(u,d,n)
         winner = 'Bull' if maxVal == u else 'Bear' if maxVal == d else '-'
