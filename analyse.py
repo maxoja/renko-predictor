@@ -100,11 +100,11 @@ if __name__ == '__main__':
     book = craftBook(FILE_NAME, PAST_LEN, FUTURE_LEN, True)
 
     for startPattern in book.counterOf.keys():
-        
+
         startState = State.create(book, startPattern, POSITION_NONE)
-        actionUtils = {}
+        utilOfActionType = {}
 
         for action in startState.actions:
-            actionUtils[action.type] = getActionUtility(action, '', UTIL_DEPTH)
+            utilOfActionType[action.type] = getActionUtility(action, '', UTIL_DEPTH)
 
-        printStateUtilities(startState, actionUtils)
+        printStateUtilities(startState, utilOfActionType)
