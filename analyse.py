@@ -91,6 +91,13 @@ def printStateUtilities(state:State, actionUtils:dict):
     print(f'({occurrence}) choose {bestActionType}')
 
 
+def getStateUtilityDict(state:State):
+    utilOfActionType = {}
+    for action in state.actions:
+        utilOfActionType[action.type] = getActionUtility(action, '', UTIL_DEPTH)
+    return utilOfActionType
+
+
 if __name__ == '__main__':
     FILE_NAME = argv[1]
     PAST_LEN = 5
@@ -102,9 +109,6 @@ if __name__ == '__main__':
     for startPattern in book.counterOf.keys():
 
         startState = State.create(book, startPattern, POSITION_NONE)
-        utilOfActionType = {}
-
-        for action in startState.actions:
-            utilOfActionType[action.type] = getActionUtility(action, '', UTIL_DEPTH)
+        utilOfActionType = getStateUtilityDict(startState)
 
         printStateUtilities(startState, utilOfActionType)
