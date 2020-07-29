@@ -23,6 +23,7 @@ def craftBook(filename, pastLen, futureLen, showTable=True):
     if showTable:
         book.showAllInfo()
         print()
+
     return book
 
 
@@ -59,15 +60,21 @@ def getActionUtility(action: Action, accPattern: str, remainingDepth):
                                                  newPattern[-FUTURE_LEN:], remainingDepth-1))
             if DEBUG:
                 print('\t'*(UTIL_DEPTH - remainingDepth), ac.type, f'{utilOfActionBranches[-1]:.3f}')
-        maxUtil = max(utilOfActionBranches)
-        maxIndex = utilOfActionBranches.index(maxUtil)
+
+        maxIndex = _argmax(utilOfActionBranches)
+        maxUtil = utilOfActionBranches[maxIndex]
+        bestAction = nextActions[maxIndex]
         utilOfAction += prob * maxUtil
 
         if DEBUG:
-            print('\t'*(UTIL_DEPTH - remainingDepth), newState.pattern[-1], f'(choose {nextActions[maxIndex].type}) {maxUtil:.3f} * {prob:.3f}')
+            print('\t'*(UTIL_DEPTH - remainingDepth), newState.pattern[-1], f'(choose {bestAction.type}) {maxUtil:.3f} * {prob:.3f}')
             if remainingDepth == UTIL_DEPTH:
                 print("="*20)
     return utilOfAction
+
+
+def _argmax(l:list):
+    return max(range(len(l)), key=lambda x:l[x])
 
 if __name__ == '__main__':
     FILE_NAME = argv[1]
