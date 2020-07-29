@@ -31,13 +31,11 @@ def _calculateRewardFromPattern(positionType, accPattern: str):
         return NO_EFFECT
     x = sum([GET_MONEYZ if x == UP_BOX else LOSE_MONEYZ for x in accPattern]
             ) * (-1 if positionType == POSITION_BEAR else 1)
-    # print(format(positionType, "4d"), accPattern, x)
     return x
 
 
 def getActionUtility(action: Action, accPattern: str, remainingDepth):
     currentPosition = action.fromState.position
-    actionType = action.type
 
     if remainingDepth == 0:
         return _calculateRewardFromPattern(currentPosition, accPattern)
@@ -78,8 +76,6 @@ if __name__ == '__main__':
     UTIL_DEPTH = 4
     DEBUG = False
     print(f'FILE {FILE_NAME} --- WINDOW ({PAST_LEN},{FUTURE_LEN}) --- UTIL_DEPTH {UTIL_DEPTH} --- DEBUG {DEBUG}\n')
-    print('file', FILE_NAME)
-    # while True:
     book = craftBook(FILE_NAME, PAST_LEN, FUTURE_LEN, True)
     # for startPattern in ["+"*PAST_LEN]:
     for startPattern in book.counterOf.keys():
@@ -91,7 +87,6 @@ if __name__ == '__main__':
             book, startState, ACTION_BEAR), '', UTIL_DEPTH)
         n = getActionUtility(Action.create(
             book, startState, ACTION_NONE), '', UTIL_DEPTH)
-        # print()
         o = book.getPatternOccurrence(startPattern)
         maxVal = max(u,d,n)
         winner = 'Bull' if maxVal == u else 'Bear' if maxVal == d else '-'
