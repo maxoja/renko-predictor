@@ -35,6 +35,7 @@ def _calculateRewardFromPattern(positionType, accPattern: str):
     return x
 
 
+DEBUG = False
 def getActionUtility(action: Action, accPattern: str, remainingDepth):
     currentPosition = action.fromState.position
 
@@ -74,29 +75,40 @@ def getActionUtility(action: Action, accPattern: str, remainingDepth):
 
 
 def _argmax(l:list):
-    return max(range(len(l)), key=lambda x:l[x])
+    return max(range(len(l)), key=lambda x: l[x])
+
+def _argmaxDict(d:dict):
+    return max(d.keys(), key=lambda k: d[k])
+
+
+def printStateUtilities(state:State, actionUtils:dict):
+    bestActionType = _argmaxDict(actionUtils)
+    occurrence = book.getPatternOccurrence(startPattern)
+    print(f'{state.pattern} : ',end='')
+    print(f'bull {actionUtils[ACTION_BULL]: 4.2f}    ',end='')
+    print(f'bear {actionUtils[ACTION_BEAR]: 4.2f}    ', end='')
+    print(f'none {actionUtils[ACTION_NONE]: 4.2f}    ', end='')
+    print(f'({occurrence}) choose {bestActionType}')
+
+
+def getStateUtilityDict(state:State):
+    utilOfActionType = {}
+    for action in state.actions:
+        utilOfActionType[action.type] = getActionUtility(action, '', UTIL_DEPTH)
+    return utilOfActionType
+
 
 if __name__ == '__main__':
     FILE_NAME = argv[1]
     PAST_LEN = 5
     FUTURE_LEN = 3
     UTIL_DEPTH = 4
-    DEBUG = False
     print(f'FILE {FILE_NAME} --- WINDOW ({PAST_LEN},{FUTURE_LEN}) --- UTIL_DEPTH {UTIL_DEPTH} --- DEBUG {DEBUG}\n')
     book = craftBook(FILE_NAME, PAST_LEN, FUTURE_LEN, True)
-    # for startPattern in ["+"*PAST_LEN]:
+
     for startPattern in book.counterOf.keys():
-        u, d, n = 9.99, 9.99, 9.99
+
         startState = State.create(book, startPattern, POSITION_NONE)
-        u = getActionUtility(Action.create(
-            book, startState, ACTION_BULL), '', UTIL_DEPTH)
-        d = getActionUtility(Action.create(
-            book, startState, ACTION_BEAR), '', UTIL_DEPTH)
-        n = getActionUtility(Action.create(
-            book, startState, ACTION_NONE), '', UTIL_DEPTH)
-        o = book.getPatternOccurrence(startPattern)
-        maxVal = max(u,d,n)
-        winner = 'Bull' if maxVal == u else 'Bear' if maxVal == d else '-'
-        print(
-            f'{startPattern} : bull {u: 4.2f}    bear {d: 4.2f}    none {n: 4.2f}    ({o}) choose {winner}',)
-    print('-'*20)
+        utilOfActionType = getStateUtilityDict(startState)
+
+        printStateUtilities(startState, utilOfActionType)
