@@ -76,6 +76,10 @@ def getActionUtility(action: Action, accPattern: str, remainingDepth):
 def _argmax(l:list):
     return max(range(len(l)), key=lambda x:l[x])
 
+def _argmaxDict(d:dict):
+    return max(d.keys(), key=lambda k: d[k])
+
+
 if __name__ == '__main__':
     FILE_NAME = argv[1]
     PAST_LEN = 5
