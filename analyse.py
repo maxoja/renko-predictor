@@ -1,3 +1,5 @@
+from sys import argv
+
 from renko import *
 from stats import *
 
@@ -58,23 +60,24 @@ def getActionUtility(action: Action, accPattern: str, remainingDepth):
                 utilOfActionBranches.append(getActionUtility(ac, accPattern +
                                                  newPattern[-FUTURE_LEN:], remainingDepth-1))
             if DEBUG:
-                print('\t'*(STEPS - remainingDepth), ac.type, f'{utilOfActionBranches[-1]:.3f}')
+                print('\t'*(UTIL_DEPTH - remainingDepth), ac.type, f'{utilOfActionBranches[-1]:.3f}')
         maxUtil = max(utilOfActionBranches)
         maxIndex = utilOfActionBranches.index(maxUtil)
         utilOfAction += prob * maxUtil
 
         if DEBUG:
-            print('\t'*(STEPS - remainingDepth), newState.pattern[-1], f'(choose {nextActions[maxIndex].type}) {maxUtil:.3f} * {prob:.3f}')
-            if remainingDepth == STEPS:
+            print('\t'*(UTIL_DEPTH - remainingDepth), newState.pattern[-1], f'(choose {nextActions[maxIndex].type}) {maxUtil:.3f} * {prob:.3f}')
+            if remainingDepth == UTIL_DEPTH:
                 print("="*20)
     return utilOfAction
 
-FILE_NAME = 'audnzd_100_small.txt'
-FUTURE_LEN = 3  # this is not adjustablel for the moment
-PAST_LEN = 5# int(input())
-STEPS = 4
-DEBUG = False
 if __name__ == '__main__':
+    FILE_NAME = argv[1]
+    PAST_LEN = 5
+    FUTURE_LEN = 3
+    UTIL_DEPTH = 4
+    DEBUG = False
+    print(f'FILE {FILE_NAME} --- WINDOW ({PAST_LEN},{FUTURE_LEN}) --- UTIL_DEPTH {UTIL_DEPTH} --- DEBUG {DEBUG}\n')
     print('file', FILE_NAME)
     # while True:
     book = craftBook(FILE_NAME, PAST_LEN, FUTURE_LEN, True)
@@ -83,11 +86,11 @@ if __name__ == '__main__':
         u, d, n = 9.99, 9.99, 9.99
         startState = State.create(book, startPattern, POSITION_NONE)
         u = getActionUtility(Action.create(
-            book, startState, ACTION_BULL), '', STEPS)
+            book, startState, ACTION_BULL), '', UTIL_DEPTH)
         d = getActionUtility(Action.create(
-            book, startState, ACTION_BEAR), '', STEPS)
+            book, startState, ACTION_BEAR), '', UTIL_DEPTH)
         n = getActionUtility(Action.create(
-            book, startState, ACTION_NONE), '', STEPS)
+            book, startState, ACTION_NONE), '', UTIL_DEPTH)
         # print()
         o = book.getPatternOccurrence(startPattern)
         maxVal = max(u,d,n)
