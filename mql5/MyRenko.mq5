@@ -117,7 +117,8 @@ void OnDeinit(const int reason) {
       return;
       
    sequence = "";
-   for(int i = 1; i < ArraySize(colorBuffer); i++) {
+   const int numBar = ArraySize(colorBuffer);
+   for(int i = 1; i < numBar; i++) {
       double latestPrice = lineBuffer[i];
       double prevPrice = lineBuffer[i-1];
 
@@ -129,13 +130,14 @@ void OnDeinit(const int reason) {
       }
    }
    
+   const int seqLen = StringLen(sequence);
    int fileHandle = FileOpen("MyRenko"+"//"+InpFileName,FILE_WRITE|FILE_CSV);
    if(fileHandle!=INVALID_HANDLE)
      {
       PrintFormat("file is available for writing");
       PrintFormat("File path: %s\\Files\\",TerminalInfoString(TERMINAL_DATA_PATH));
       //--- first, write the number of signals
-      FileWrite(fileHandle, "created", TimeCurrent(), "len", StringLen(sequence), "LSnap", InpUseLargeSnap);
+      FileWrite(fileHandle, "created", TimeCurrent(), "len", seqLen, "LSnap", InpUseLargeSnap, "averageBar", _Period*numBar/seqLen);
       FileWrite(fileHandle, "bSize", InpBoxSizePoint, "tf", _Period, "range", getStartRange(), getEndRange()); 
       FileWrite(fileHandle,sequence);
       
