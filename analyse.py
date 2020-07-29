@@ -1,9 +1,6 @@
 from renko import *
 from stats import *
 
-FILE_NAME = 'audnzd_50_small.txt'
-FUTURE_LEN = 1  # this is not adjustablel for the moment
-
 
 def craftBook(filename, pastLen, futureLen, showTable=True):
     blockLen = pastLen + futureLen
@@ -23,6 +20,7 @@ def craftBook(filename, pastLen, futureLen, showTable=True):
 
     if showTable:
         book.showAllInfo()
+        print()
     return book
 
 
@@ -40,7 +38,6 @@ def getActionUtility(action: Action, accPattern: str, remainingDepth):
     actionType = action.type
 
     if remainingDepth == 0:
-        # print('\t'*(STEPS - remainingDepth-1),'-')
         return _calculateRewardFromPattern(currentPosition, accPattern)
 
     utilOfAction = 0
@@ -51,7 +48,6 @@ def getActionUtility(action: Action, accPattern: str, remainingDepth):
 
         nextActions = newState.actions
         utilOfActionBranches = []
-        print('\t'*(STEPS - remainingDepth), '-'*10)
         for ac in nextActions:
             if ac.type == ACTION_CLOSE:
                 utilOfActionBranches.append(getActionUtility(ac,
@@ -61,39 +57,41 @@ def getActionUtility(action: Action, accPattern: str, remainingDepth):
             else:
                 utilOfActionBranches.append(getActionUtility(ac, accPattern +
                                                  newPattern[-FUTURE_LEN:], remainingDepth-1))
-            print('\t'*(STEPS - remainingDepth), ac.type, f'{utilOfActionBranches[-1]:.3f}')
+            if DEBUG:
+                print('\t'*(STEPS - remainingDepth), ac.type, f'{utilOfActionBranches[-1]:.3f}')
         maxUtil = max(utilOfActionBranches)
         maxIndex = utilOfActionBranches.index(maxUtil)
         utilOfAction += prob * maxUtil
 
-
-        print('\t'*(STEPS - remainingDepth), f'(choose {nextActions[maxIndex].type}) {maxUtil:.3f}')
-        if remainingDepth == STEPS:
-            print("xxxxx")
-        # print('\t'*(STEPS - remainingDepth), nextActions[maxIndex].type, f'{maxUtil:.3f}')
-    # print(len(action.validOutcomes.items()))
+        if DEBUG:
+            print('\t'*(STEPS - remainingDepth), newState.pattern[-1], f'(choose {nextActions[maxIndex].type}) {maxUtil:.3f} * {prob:.3f}')
+            if remainingDepth == STEPS:
+                print("="*20)
     return utilOfAction
 
-
-STEPS = 5
+FILE_NAME = 'audnzd_100_small.txt'
+FUTURE_LEN = 3  # this is not adjustablel for the moment
+PAST_LEN = 5# int(input())
+STEPS = 4
+DEBUG = False
 if __name__ == '__main__':
     print('file', FILE_NAME)
     # while True:
-    PAST_LEN = 2# int(input())
     book = craftBook(FILE_NAME, PAST_LEN, FUTURE_LEN, True)
-    for startPattern in ["+"*PAST_LEN]: #book.counterOf.keys():
+    # for startPattern in ["+"*PAST_LEN]:
+    for startPattern in book.counterOf.keys():
+        u, d, n = 9.99, 9.99, 9.99
         startState = State.create(book, startPattern, POSITION_NONE)
-        # u = getActionUtility(Action.create(
-        #     book, startState, ACTION_BULL), '', STEPS)
-        # print()
-        # d = getActionUtility(Action.create(
-        #     book, startState, ACTION_BEAR), '', STEPS)
-        # print()
+        u = getActionUtility(Action.create(
+            book, startState, ACTION_BULL), '', STEPS)
+        d = getActionUtility(Action.create(
+            book, startState, ACTION_BEAR), '', STEPS)
         n = getActionUtility(Action.create(
             book, startState, ACTION_NONE), '', STEPS)
-        print()
+        # print()
         o = book.getPatternOccurrence(startPattern)
-        # print(
-        #     f'{startPattern} : bull {u: 4.2f}    bear {d: 4.2f}    none {n: 4.2f}    ({o})')
-        # print(f'{startPattern} : none {n: 4.2f}')
+        maxVal = max(u,d,n)
+        winner = 'Bull' if maxVal == u else 'Bear' if maxVal == d else '-'
+        print(
+            f'{startPattern} : bull {u: 4.2f}    bear {d: 4.2f}    none {n: 4.2f}    ({o}) choose {winner}',)
     print('-'*20)
