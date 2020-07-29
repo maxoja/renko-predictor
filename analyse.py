@@ -35,6 +35,7 @@ def _calculateRewardFromPattern(positionType, accPattern: str):
     return x
 
 
+DEBUG = False
 def getActionUtility(action: Action, accPattern: str, remainingDepth):
     currentPosition = action.fromState.position
 
