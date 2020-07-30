@@ -13,7 +13,7 @@ from sys import argv
 
 from renko import loadSequence
 from utils import craftBook
-from analyse import getStateBestActionAndUtility, calculateRewardFromPattern
+from decision import getStateBestActionAndUtility, calculateRewardFromPattern
 from stats import PositionEnum, ActionEnum, Action, State
 from config import Config as conf
 
