@@ -1,24 +1,44 @@
 from collections import Counter
+from typing import List
 
-GET_MONEYZ = 1
-NO_EFFECT = 0
-LOSE_MONEYZ = -1
+
+class PositionType(str):
+    pass
+
+class PositionEnum:
+    NONE = PositionType("POS_NONE")
+    BULL = PositionType("POS_BULL")
+    BEAR = PositionType("POS_BEAR")
+    INVALID = PositionType("POS_INVALID")
+
+class ActionType(str):
+    pass
+
+class ActionEnum:
+    NONE = ActionType("ACT_NONE")
+    BULL = ActionType("ACT_BULL")
+    BEAR = ActionType("ACT_BEAR")
+    CLOSE = ActionType("ACT_CLOSE")
+
+    @staticmethod
+    def getAll() -> List[ActionType]:
+        return [ActionEnum.NONE, ActionEnum.BULL, ActionEnum.BEAR, ActionEnum.CLOSE]
 
 class KnowledgeBook:
     def __init__(self):
         self.counterOf = dict()
         
-    def includeSample(self, pattern, next):
+    def includeSample(self, pattern:str, next:str):
         if not pattern in self.counterOf:
             self.counterOf[pattern] = Counter({next:1})
         else:
             self.counterOf[pattern] += Counter({next:1})
     
-    def getProbOfNextPattern(self, pattern, next):
+    def getProbOfNextPattern(self, pattern:str, next:str):
         counter = self.counterOf[pattern]
         return counter[next]/sum(counter.values())
 
-    def getPatternOccurrence(self, pattern):
+    def getPatternOccurrence(self, pattern:str):
         counter = self.counterOf[pattern]
         return sum(counter.values())
 
@@ -30,15 +50,11 @@ class KnowledgeBook:
                 strFigures.append(f'{nextPattern}({prob:.0%})')
             print(pattern, *sorted(strFigures), self.getPatternOccurrence(pattern))
 
-POSITION_NONE = 'POSITION_NONE' 
-POSITION_BULL = 'POSITION_BULL' 
-POSITION_BEAR = 'POSITION_BEAR' 
-POSITION_INVALID = 'POSITION_INVALID'
 
 class State:
     cached = dict()
 
-    def __init__(self, pattern, position, actions: list):
+    def __init__(self, pattern:str, position:PositionType, actions: list):
         self.pattern = pattern
         self.position = position
         self.actions = actions
@@ -53,7 +69,7 @@ class State:
         return f'[{self.pattern},{self.position}]'
 
     @staticmethod
-    def create(book, pattern, position):
+    def create(book:KnowledgeBook, pattern:str, position:PositionType):
         if State._checkCache(pattern, position):
             return State._getCache(pattern, position)
             
@@ -61,7 +77,7 @@ class State:
         state = State(pattern, position, actions)
         State._updateCache(pattern, position, state)
 
-        for actionType in ALL_ACTIONS:
+        for actionType in ActionEnum.getAll():
             newAction = Action.create(book, state, actionType)
             if not newAction is None:
                 actions.append(newAction)
@@ -81,38 +97,32 @@ class State:
         State.cached[(pattern, position)] = state
 
 
-ACTION_NONE = 'ACTION_NONE'
-ACTION_BULL = 'ACTION_BULL'
-ACTION_BEAR = 'ACTION_BEAR'
-ACTION_CLOSE = 'ACTION_CLOSE'
-ALL_ACTIONS = [ACTION_NONE, ACTION_BULL, ACTION_BEAR, ACTION_CLOSE]
-
 class Action:
     cached = dict()
 
-    def __init__(self, currentState, actionType, validOutcomes:dict):
+    def __init__(self, currentState:State, actionType:ActionType, validOutcomes:dict):
         self.fromState = currentState
         self.type = actionType
         self.validOutcomes = validOutcomes
     
     @staticmethod
-    def getResultPositionStatus(currentPosition, actionType):
-        if actionType == ACTION_NONE:
+    def getResultPositionStatus(currentPosition:PositionType, actionType:ActionType):
+        if actionType == ActionEnum.NONE:
             return currentPosition
 
-        if (actionType, currentPosition) == (ACTION_BULL, POSITION_NONE):
-            return POSITION_BULL
+        if (actionType, currentPosition) == (ActionEnum.BULL, PositionEnum.NONE):
+            return PositionEnum.BULL
 
-        if (actionType, currentPosition) == (ACTION_BEAR, POSITION_NONE):
-            return POSITION_BEAR
+        if (actionType, currentPosition) == (ActionEnum.BEAR, PositionEnum.NONE):
+            return PositionEnum.BEAR
 
-        if actionType == ACTION_CLOSE and currentPosition in [POSITION_BULL, POSITION_BEAR]:
-            return POSITION_NONE
+        if actionType == ActionEnum.CLOSE and currentPosition in [PositionEnum.BULL, PositionEnum.BEAR]:
+            return PositionEnum.NONE
 
-        return POSITION_INVALID
+        return PositionEnum.INVALID
 
     @staticmethod
-    def create(book, currentState:State, actionType):
+    def create(book:KnowledgeBook, currentState:State, actionType:ActionType):
         if Action._checkCache(currentState, actionType):
             return Action._getCache(currentState, actionType)
         
@@ -120,7 +130,7 @@ class Action:
         currentPosition = currentState.position
         newPosition = Action.getResultPositionStatus(currentPosition, actionType)
 
-        if newPosition == POSITION_INVALID:
+        if newPosition == PositionEnum.INVALID:
             return None
 
         outcomes = {}

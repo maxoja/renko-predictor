@@ -2,21 +2,25 @@ from sys import argv
 from time import time
 from math import inf
 
-from renko import *
-from stats import *
-from utils import craftBook
+from renko import RenkoBoxEnum, loadSequence
+from stats import KnowledgeBook, State, Action, PositionEnum, ActionEnum
+from utils import craftBook, argmaxDict
 from config import Config as conf
 
 
-def calculateRewardFromPattern(positionType, accPattern: str):
-    if positionType == POSITION_NONE:
+def calculateRewardFromPattern(positionType, accPattern: str) -> float:
+    GET_MONEYZ = 1
+    NO_EFFECT = 0
+    LOSE_MONEYZ = -1
+
+    if positionType == PositionEnum.NONE:
         return NO_EFFECT
-    x = sum([GET_MONEYZ if x == UP_BOX else LOSE_MONEYZ for x in accPattern]
-            ) * (-1 if positionType == POSITION_BEAR else 1)
+    x = sum([GET_MONEYZ if x == RenkoBoxEnum.UP else LOSE_MONEYZ for x in accPattern]
+            ) * (-1 if positionType == PositionEnum.BEAR else 1)
     return x
 
 
-def getStateBestActionAndUtility(state: State, accPattern: str, remainingDepth):
+def getStateBestActionAndUtility(state: State, accPattern: str, remainingDepth) -> (Action, float):
     bestUtil = -inf
     bestAction = None
 
@@ -24,10 +28,10 @@ def getStateBestActionAndUtility(state: State, accPattern: str, remainingDepth):
         newAccPattern = accPattern+state.pattern[-conf.futureLength:]
         newRemaindingDepth = remainingDepth-1
 
-        if action.type == ACTION_CLOSE:
+        if action.type == ActionEnum.CLOSE:
             newRemaindingDepth = 0
 
-        if state.position == POSITION_NONE:
+        if state.position == PositionEnum.NONE:
             newAccPattern = ''
 
         utility = getActionUtility(action, newAccPattern, newRemaindingDepth)
@@ -37,12 +41,12 @@ def getStateBestActionAndUtility(state: State, accPattern: str, remainingDepth):
             bestAction = action
 
         if DEBUG:
-            print('\t'*(UTIL_DEPTH - remainingDepth), action.type, f'{utility:.3f}')
+            print('\t'*(conf.utilDepth - remainingDepth), action.type, f'{utility:.3f}')
 
     return bestAction, bestUtil
 
 DEBUG = False
-def getActionUtility(action: Action, accPattern: str, remainingDepth, cacheTable = {}):
+def getActionUtility(action: Action, accPattern: str, remainingDepth, cacheTable = {}) -> float:
     if (action, accPattern, remainingDepth) in cacheTable:
         return cacheTable[(action, accPattern, remainingDepth)]
 
@@ -58,7 +62,7 @@ def getActionUtility(action: Action, accPattern: str, remainingDepth, cacheTable
         utility += prob * bestUtil
 
         if DEBUG:
-            print('\t'*(UTIL_DEPTH - remainingDepth), newState.pattern[-1], f'(choose {bestAction.type}) {bestUtil:.3f} * {prob:.3f}')
+            print('\t'*(conf.utilDepth - remainingDepth), newState.pattern[-1], f'(choose {bestAction.type}) {bestUtil:.3f} * {prob:.3f}')
             if remainingDepth == conf.utilDepth:
                 print("="*20)
 
@@ -66,21 +70,13 @@ def getActionUtility(action: Action, accPattern: str, remainingDepth, cacheTable
     return utility
 
 
-def _argmax(l:list):
-    return max(range(len(l)), key=lambda x: l[x])
-
-
-def _argmaxDict(d:dict):
-    return max(d.keys(), key=lambda k: d[k])
-
-
 def printStateUtilities(state:State, actionUtils:dict):
-    bestActionType = _argmaxDict(actionUtils)
+    bestActionType = argmaxDict(actionUtils)
     occurrence = book.getPatternOccurrence(startPattern)
     print(f'{state.pattern} : ',end='')
-    print(f'bull {actionUtils[ACTION_BULL]: 4.2f}    ',end='')
-    print(f'bear {actionUtils[ACTION_BEAR]: 4.2f}    ', end='')
-    print(f'none {actionUtils[ACTION_NONE]: 4.2f}    ', end='')
+    print(f'bull {actionUtils[ActionEnum.BULL]: 4.2f}    ',end='')
+    print(f'bear {actionUtils[ActionEnum.BEAR]: 4.2f}    ', end='')
+    print(f'none {actionUtils[ActionEnum.NONE]: 4.2f}    ', end='')
     print(f'({occurrence}) choose {bestActionType}')
 
 
@@ -105,7 +101,7 @@ if __name__ == '__main__':
 
     for startPattern in book.counterOf.keys():
 
-        startState = State.create(book, startPattern, POSITION_NONE)
+        startState = State.create(book, startPattern, PositionEnum.NONE)
         utilOfActionType = getStateUtilityDict(startState)
 
         printStateUtilities(startState, utilOfActionType)

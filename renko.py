@@ -1,5 +1,12 @@
-UP_BOX = '+'
-DOWN_BOX = '-'
+class RenkoBoxType(str):
+    pass
+
+
+class RenkoBoxEnum:
+    UP = RenkoBoxType("+")
+    DOWN = RenkoBoxType("-")
+    SIDE = RenkoBoxType(".")
+
 
 def loadSequence(filename):
     with open(f'./data/{filename}', "rb") as file:

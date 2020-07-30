@@ -22,3 +22,7 @@ def craftBook(sequence, pastLen, futureLen, showTable=True):
         print()
 
     return book
+
+
+def argmaxDict(d:dict):
+    return max(d.keys(), key=lambda k: d[k])

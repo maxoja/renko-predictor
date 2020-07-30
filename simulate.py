@@ -14,7 +14,7 @@ from sys import argv
 from renko import loadSequence
 from utils import craftBook
 from analyse import getStateBestActionAndUtility, calculateRewardFromPattern
-from stats import *
+from stats import PositionEnum, ActionEnum, Action, State
 from config import Config as conf
 
 if __name__ == "__main__":
@@ -31,7 +31,7 @@ if __name__ == "__main__":
 
     book = craftBook(trainDataset, conf.patternLength, conf.futureLength, True)
 
-    currentPosition = POSITION_NONE
+    currentPosition = PositionEnum.NONE
     openIndex = None
     totalProfit = 0
     phaseCount = 0
@@ -44,12 +44,12 @@ if __name__ == "__main__":
         newPosition = Action.getResultPositionStatus(currentPosition, action.type)
 
         # sum up result
-        if action.type == ACTION_CLOSE:
+        if action.type == ActionEnum.CLOSE:
             sequenceSinceOpen = testDataset[openIndex:i+conf.patternLength]
             phaseCount += 1
             totalProfit += calculateRewardFromPattern(oldPosition, sequenceSinceOpen)
             openIndex = None
-        elif action.type in [ACTION_BULL, ACTION_BEAR]:
+        elif action.type in [ActionEnum.BULL, ActionEnum.BEAR]:
             openIndex = i+conf.patternLength
 
         currentPosition = newPosition
