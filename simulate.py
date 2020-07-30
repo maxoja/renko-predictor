@@ -12,7 +12,7 @@
 from sys import argv
 
 from config import Config as conf
-from decision import getStateBestActionAndUtility, calculateRewardFromPattern
+from decision import getStateBestActionAndUtility, getPositionReward
 from renko import loadSequence
 from stats import PositionEnum, ActionEnum, Action, State
 from utils import craftBook
@@ -47,7 +47,7 @@ if __name__ == "__main__":
         if action.type == ActionEnum.CLOSE:
             sequenceSinceOpen = testDataset[openIndex:i+conf.patternLength]
             phaseCount += 1
-            totalProfit += calculateRewardFromPattern(oldPosition, sequenceSinceOpen)
+            totalProfit += getPositionReward(oldPosition, sequenceSinceOpen)
             openIndex = None
         elif action.type in [ActionEnum.BULL, ActionEnum.BEAR]:
             openIndex = i+conf.patternLength

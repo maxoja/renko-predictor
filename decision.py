@@ -12,19 +12,19 @@ REWARD_OF = {
     (PositionEnum.BEAR, RenkoBoxEnum.DOWN): 1
 }
 
-def calculateRewardFromPattern(position:PositionType, accPattern: str) -> float:
+def getPositionReward(position:PositionType, patternSinceOpen: str) -> float:
     reward = 0
-    for box in accPattern:
+    for box in patternSinceOpen:
         reward += REWARD_OF[(position, box)]
     return reward
 
 
-def getStateBestActionAndUtility(state: State, accPattern: str, remainingDepth: int) -> (Action, float):
+def getStateBestActionAndUtility(state: State, patternSinceOpen: str, remainingDepth: int) -> (Action, float):
     bestUtil = -inf
     bestAction = None
 
     for action in state.actions:
-        newAccPattern = accPattern+state.pattern[-conf.futureLength:]
+        newAccPattern = patternSinceOpen+state.pattern[-conf.futureLength:]
         newRemaindingDepth = remainingDepth-1
 
         if action.type == ActionEnum.CLOSE:
@@ -45,19 +45,19 @@ def getStateBestActionAndUtility(state: State, accPattern: str, remainingDepth: 
     return bestAction, bestUtil
 
 
-def getActionUtility(action: Action, accPattern: str, remainingDepth: int, cacheTable = {}) -> float:
-    if (action, accPattern, remainingDepth) in cacheTable:
-        return cacheTable[(action, accPattern, remainingDepth)]
+def getActionUtility(action: Action, patternSinceOpen: str, remainingDepth: int, cacheTable = {}) -> float:
+    if (action, patternSinceOpen, remainingDepth) in cacheTable:
+        return cacheTable[(action, patternSinceOpen, remainingDepth)]
 
     currentPosition = action.fromState.position
 
     if remainingDepth == 0:
-        return calculateRewardFromPattern(currentPosition, accPattern)
+        return getPositionReward(currentPosition, patternSinceOpen)
 
     utility = 0
     for outcome in action.validOutcomes.items():
         newState, prob = outcome
-        bestAction, bestUtil = getStateBestActionAndUtility(newState, accPattern, remainingDepth)
+        bestAction, bestUtil = getStateBestActionAndUtility(newState, patternSinceOpen, remainingDepth)
         utility += prob * bestUtil
 
         if conf.debug:
@@ -66,5 +66,5 @@ def getActionUtility(action: Action, accPattern: str, remainingDepth: int, cache
             if reverseDepth == 0:
                 print("="*20)
 
-    cacheTable[(action, accPattern, remainingDepth)] = utility
+    cacheTable[(action, patternSinceOpen, remainingDepth)] = utility
     return utility
