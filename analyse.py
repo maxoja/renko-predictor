@@ -31,7 +31,7 @@ if __name__ == '__main__':
     
     startTimer()
     dataset = loadSequence(FILE_NAME)
-    book = craftBook(dataset, conf.patternLength, conf.futureLength, True)
+    book = craftBook(dataset, conf.window, True)
 
     for startPattern in book.counterOf.keys():
         startState = State.create(book, startPattern, PositionEnum.NONE)

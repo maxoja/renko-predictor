@@ -1,20 +1,20 @@
 from time import time
 
+from config import WindowShape
 from renko import loadSequence
 from stats import KnowledgeBook
 
-def craftBook(sequence, pastLen, futureLen, showTable=True):
-    blockLen = pastLen + futureLen
+def craftBook(sequence, windowShape:WindowShape, showTable=True):
     renko = sequence
     book = KnowledgeBook()
 
-    for i in range(len(renko) - blockLen):
+    for i in range(len(renko) - windowShape.combinedSize):
         pastHead = i
-        pastTail = pastHead + pastLen
+        pastTail = pastHead + windowShape.past
         featurePattern = renko[pastHead: pastTail]
 
         futureHead = pastTail
-        futureTail = futureHead + futureLen
+        futureTail = futureHead + windowShape.future
         futurePattern = renko[futureHead:futureTail]
 
         book.includeSample(featurePattern, futurePattern)

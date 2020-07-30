@@ -24,7 +24,7 @@ def getStateBestActionAndUtility(state: State, patternSinceOpen: str, remainingD
     bestAction = None
 
     for action in state.actions:
-        newAccPattern = patternSinceOpen+state.pattern[-conf.futureLength:]
+        newAccPattern = patternSinceOpen+state.pattern[-conf.window.future:]
         newRemaindingDepth = remainingDepth-1
 
         if action.type == ActionEnum.CLOSE:
