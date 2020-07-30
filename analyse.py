@@ -3,21 +3,23 @@ from time import time
 from math import inf
 
 from renko import RenkoBoxEnum, loadSequence
-from stats import KnowledgeBook, State, Action, PositionEnum, ActionEnum
+from stats import KnowledgeBook, State, Action, PositionEnum, ActionEnum, PositionType
 from utils import craftBook, argmaxDict
 from config import Config as conf
 
+rewardOf = {
+    (PositionEnum.BULL, RenkoBoxEnum.UP): 1,
+    (PositionEnum.BULL, RenkoBoxEnum.DOWN): -1,
+    (PositionEnum.BEAR, RenkoBoxEnum.UP): -1,
+    (PositionEnum.BEAR, RenkoBoxEnum.DOWN): 1
+}
 
-def calculateRewardFromPattern(positionType, accPattern: str) -> float:
-    GET_MONEYZ = 1
-    NO_EFFECT = 0
-    LOSE_MONEYZ = -1
 
-    if positionType == PositionEnum.NONE:
-        return NO_EFFECT
-    x = sum([GET_MONEYZ if x == RenkoBoxEnum.UP else LOSE_MONEYZ for x in accPattern]
-            ) * (-1 if positionType == PositionEnum.BEAR else 1)
-    return x
+def calculateRewardFromPattern(position:PositionType, accPattern: str) -> float:
+    reward = 0
+    for box in accPattern:
+        reward += rewardOf[(position, box)]
+    return reward
 
 
 def getStateBestActionAndUtility(state: State, accPattern: str, remainingDepth) -> (Action, float):
