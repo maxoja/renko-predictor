@@ -1,4 +1,6 @@
 from sys import argv
+from time import time
+from math import inf
 
 from renko import *
 from stats import *
@@ -104,6 +106,7 @@ def getStateUtilityDict(state:State):
 
 
 if __name__ == '__main__':
+    startTime = time()
     FILE_NAME = argv[1]
     PAST_LEN = 5
     FUTURE_LEN = 3
@@ -117,3 +120,5 @@ if __name__ == '__main__':
         utilOfActionType = getStateUtilityDict(startState)
 
         printStateUtilities(startState, utilOfActionType)
+    
+    print(time() - startTime)
