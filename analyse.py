@@ -37,6 +37,31 @@ def _calculateRewardFromPattern(positionType, accPattern: str):
     return x
 
 
+def getStateBestActionAndUtility(state: State, accPattern: str, remainingDepth):
+    bestUtil = -inf
+    bestAction = None
+
+    for action in state.actions:
+        newAccPattern = accPattern+state.pattern[-FUTURE_LEN:]
+        newRemaindingDepth = remainingDepth-1
+
+        if action.type == ACTION_CLOSE:
+            newRemaindingDepth = 0
+
+        if state.position == POSITION_NONE:
+            newAccPattern = ''
+
+        utility = getActionUtility(action, newAccPattern, newRemaindingDepth)
+
+        if utility > bestUtil:
+            bestUtil = utility
+            bestAction = action
+
+        if DEBUG:
+            print('\t'*(UTIL_DEPTH - remainingDepth), action.type, f'{utility:.3f}')
+
+    return bestAction, bestUtil
+
 DEBUG = False
 def getActionUtility(action: Action, accPattern: str, remainingDepth, cacheTable = {}):
     if (action, accPattern, remainingDepth) in cacheTable:
@@ -47,42 +72,24 @@ def getActionUtility(action: Action, accPattern: str, remainingDepth, cacheTable
     if remainingDepth == 0:
         return _calculateRewardFromPattern(currentPosition, accPattern)
 
-    utilOfAction = 0
+    utility = 0
     for outcome in action.validOutcomes.items():
         newState, prob = outcome
-        newPattern = newState.pattern
-        newPosition = newState.position
-
-        nextActions = newState.actions
-        utilOfActionBranches = []
-        for ac in nextActions:
-            if ac.type == ACTION_CLOSE:
-                utilOfActionBranches.append(getActionUtility(ac,
-                                                 accPattern+newPattern[-FUTURE_LEN:], 0))
-            elif newPosition == POSITION_NONE:
-                utilOfActionBranches.append(getActionUtility(ac, '', remainingDepth-1))
-            else:
-                utilOfActionBranches.append(getActionUtility(ac, accPattern +
-                                                 newPattern[-FUTURE_LEN:], remainingDepth-1))
-            if DEBUG:
-                print('\t'*(UTIL_DEPTH - remainingDepth), ac.type, f'{utilOfActionBranches[-1]:.3f}')
-
-        maxIndex = _argmax(utilOfActionBranches)
-        maxUtil = utilOfActionBranches[maxIndex]
-        bestAction = nextActions[maxIndex]
-        utilOfAction += prob * maxUtil
+        bestAction, bestUtil = getStateBestActionAndUtility(newState, accPattern, remainingDepth)
+        utility += prob * bestUtil
 
         if DEBUG:
-            print('\t'*(UTIL_DEPTH - remainingDepth), newState.pattern[-1], f'(choose {bestAction.type}) {maxUtil:.3f} * {prob:.3f}')
+            print('\t'*(UTIL_DEPTH - remainingDepth), newState.pattern[-1], f'(choose {bestAction.type}) {bestUtil:.3f} * {prob:.3f}')
             if remainingDepth == UTIL_DEPTH:
                 print("="*20)
 
-    cacheTable[(action, accPattern, remainingDepth)] = utilOfAction
-    return utilOfAction
+    cacheTable[(action, accPattern, remainingDepth)] = utility
+    return utility
 
 
 def _argmax(l:list):
     return max(range(len(l)), key=lambda x: l[x])
+
 
 def _argmaxDict(d:dict):
     return max(d.keys(), key=lambda k: d[k])
@@ -110,7 +117,7 @@ if __name__ == '__main__':
     FILE_NAME = argv[1]
     PAST_LEN = 5
     FUTURE_LEN = 3
-    UTIL_DEPTH = 7
+    UTIL_DEPTH = 6
     print(f'FILE {FILE_NAME} --- WINDOW ({PAST_LEN},{FUTURE_LEN}) --- UTIL_DEPTH {UTIL_DEPTH} --- DEBUG {DEBUG}\n')
     book = craftBook(FILE_NAME, PAST_LEN, FUTURE_LEN, True)
 
