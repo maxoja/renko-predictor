@@ -4,22 +4,22 @@ from config import Config as conf
 from renko import RenkoBoxEnum
 from stats import State, Action, PositionEnum, PositionType, ActionEnum
 
-rewardOf = {
+
+REWARD_OF = {
     (PositionEnum.BULL, RenkoBoxEnum.UP): 1,
     (PositionEnum.BULL, RenkoBoxEnum.DOWN): -1,
     (PositionEnum.BEAR, RenkoBoxEnum.UP): -1,
     (PositionEnum.BEAR, RenkoBoxEnum.DOWN): 1
 }
 
-
 def calculateRewardFromPattern(position:PositionType, accPattern: str) -> float:
     reward = 0
     for box in accPattern:
-        reward += rewardOf[(position, box)]
+        reward += REWARD_OF[(position, box)]
     return reward
 
 
-def getStateBestActionAndUtility(state: State, accPattern: str, remainingDepth) -> (Action, float):
+def getStateBestActionAndUtility(state: State, accPattern: str, remainingDepth: int) -> (Action, float):
     bestUtil = -inf
     bestAction = None
 
@@ -45,7 +45,7 @@ def getStateBestActionAndUtility(state: State, accPattern: str, remainingDepth) 
     return bestAction, bestUtil
 
 
-def getActionUtility(action: Action, accPattern: str, remainingDepth, cacheTable = {}) -> float:
+def getActionUtility(action: Action, accPattern: str, remainingDepth: int, cacheTable = {}) -> float:
     if (action, accPattern, remainingDepth) in cacheTable:
         return cacheTable[(action, accPattern, remainingDepth)]
 
@@ -61,8 +61,9 @@ def getActionUtility(action: Action, accPattern: str, remainingDepth, cacheTable
         utility += prob * bestUtil
 
         if conf.debug:
-            print('\t'*(conf.utilDepth - remainingDepth), newState.pattern[-1], f'(choose {bestAction.type}) {bestUtil:.3f} * {prob:.3f}')
-            if remainingDepth == conf.utilDepth:
+            reverseDepth = conf.utilDepth - remainingDepth
+            print('\t'*reverseDepth, f'{newState.pattern[-1]} (choose {bestAction.type}) {bestUtil:.3f} * {prob:.3f}')
+            if reverseDepth == 0:
                 print("="*20)
 
     cacheTable[(action, accPattern, remainingDepth)] = utility

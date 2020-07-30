@@ -22,7 +22,6 @@ def printStateUtilities(state:State, actionUtils:dict):
     print(f'bear {actionUtils[ActionEnum.BEAR]: 4.2f}    ', end='')
     print(f'none {actionUtils[ActionEnum.NONE]: 4.2f}    ', end='')
     print(f'({occurrence}) choose {bestActionType}')
-    print()
 
 
 if __name__ == '__main__':
@@ -39,4 +38,5 @@ if __name__ == '__main__':
         utilOfActionType = getStateUtilityDict(startState)
         printStateUtilities(startState, utilOfActionType)
     
+    print()
     print(f'execution time: {timeSinceStart():.2f} s' )
