@@ -1,3 +1,5 @@
+from renko import RenkoSnapEnum, RenkoSnapMode
+
 class WindowShape:
     def __init__(self, past, future):
         self.past = past
@@ -16,6 +18,7 @@ class WindowShape:
 
 
 class Config:
+    renkoSnapMode: RenkoSnapMode = RenkoSnapEnum.SMALL
     window: WindowShape = WindowShape(3,1)
     utilDepth: int = 5
     debug: bool = False
@@ -23,6 +26,7 @@ class Config:
     @staticmethod
     def getStringInfo():
         return f'''Configuration
+        snapMode:      {Config.renkoSnapMode}
         windowShape:   {Config.window}
         utilDepth:     {Config.utilDepth}
         debug:         {Config.debug}
