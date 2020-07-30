@@ -38,7 +38,7 @@ POSITION_INVALID = 'POSITION_INVALID'
 class State:
     cached = dict()
 
-    def __init__(self, pattern, position, actions):
+    def __init__(self, pattern, position, actions: list):
         self.pattern = pattern
         self.position = position
         self.actions = actions
@@ -153,3 +153,6 @@ class Action:
 
     def __hash__(self):
         return hash((self.fromState, self.type))
+
+    def __str__(self):
+        return f'[{self.fromState},{self.type}]'
