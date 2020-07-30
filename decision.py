@@ -6,16 +6,28 @@ from stats import State, Action, PositionEnum, PositionType, ActionEnum
 
 
 REWARD_OF = {
-    (PositionEnum.BULL, RenkoBoxEnum.UP): 1,
-    (PositionEnum.BULL, RenkoBoxEnum.DOWN): -1,
-    (PositionEnum.BEAR, RenkoBoxEnum.UP): -1,
-    (PositionEnum.BEAR, RenkoBoxEnum.DOWN): 1
+    'small': {
+        (PositionEnum.BULL, RenkoBoxEnum.UP): 1,
+        (PositionEnum.BULL, RenkoBoxEnum.DOWN): -1,
+        (PositionEnum.BEAR, RenkoBoxEnum.UP): -1,
+        (PositionEnum.BEAR, RenkoBoxEnum.DOWN): 1
+    },
+    'large': {
+        (PositionEnum.BULL, RenkoBoxEnum.UP+RenkoBoxEnum.UP): 1,
+        (PositionEnum.BULL, RenkoBoxEnum.DOWN+RenkoBoxEnum.UP): 2,
+        (PositionEnum.BULL, RenkoBoxEnum.DOWN+RenkoBoxEnum.DOWN): -1,
+        (PositionEnum.BULL, RenkoBoxEnum.UP+RenkoBoxEnum.DOWN): -2,
+        (PositionEnum.BEAR, RenkoBoxEnum.UP+RenkoBoxEnum.UP): -1,
+        (PositionEnum.BEAR, RenkoBoxEnum.DOWN+RenkoBoxEnum.UP): -2,
+        (PositionEnum.BEAR, RenkoBoxEnum.DOWN+RenkoBoxEnum.DOWN): 1,
+        (PositionEnum.BEAR, RenkoBoxEnum.UP+RenkoBoxEnum.DOWN): 2,
+    }
 }
 
 def getPositionReward(position:PositionType, patternSinceOpen: str) -> float:
     reward = 0
     for box in patternSinceOpen:
-        reward += REWARD_OF[(position, box)]
+        reward += REWARD_OF['small'][(position, box)]
     return reward
 
 
