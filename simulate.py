@@ -11,11 +11,11 @@
 
 from sys import argv
 
-from renko import loadSequence
-from utils import craftBook
-from decision import getStateBestActionAndUtility, calculateRewardFromPattern
-from stats import PositionEnum, ActionEnum, Action, State
 from config import Config as conf
+from decision import getStateBestActionAndUtility, calculateRewardFromPattern
+from renko import loadSequence
+from stats import PositionEnum, ActionEnum, Action, State
+from utils import craftBook
 
 if __name__ == "__main__":
     filename, conf.patternLength, conf.utilDepth = argv[1], int(argv[2]), int(argv[3])

@@ -2,11 +2,11 @@ from sys import argv
 from time import time
 from math import inf
 
+from config import Config as conf
+from decision import getActionUtility
 from renko import loadSequence
 from stats import KnowledgeBook, State, PositionEnum, ActionEnum
 from utils import craftBook, argmaxDict
-from config import Config as conf
-from decision import getActionUtility
 
 
 def printStateUtilities(state:State, actionUtils:dict):

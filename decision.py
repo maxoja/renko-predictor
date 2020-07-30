@@ -1,8 +1,8 @@
 from math import inf
 
-from stats import State, Action, PositionEnum, PositionType, ActionEnum
-from renko import RenkoBoxEnum
 from config import Config as conf
+from renko import RenkoBoxEnum
+from stats import State, Action, PositionEnum, PositionType, ActionEnum
 
 rewardOf = {
     (PositionEnum.BULL, RenkoBoxEnum.UP): 1,
