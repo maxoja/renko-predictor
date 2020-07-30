@@ -4,32 +4,11 @@ from math import inf
 
 from renko import *
 from stats import *
+from utils import craftBook
+from config import Config as conf
 
 
-def craftBook(filename, pastLen, futureLen, showTable=True):
-    blockLen = pastLen + futureLen
-    renko = loadSequence(FILE_NAME)
-    book = KnowledgeBook()
-
-    for i in range(len(renko) - blockLen):
-        pastHead = i
-        pastTail = pastHead + pastLen
-        featurePattern = renko[pastHead: pastTail]
-
-        futureHead = pastTail
-        futureTail = futureHead + futureLen
-        futurePattern = renko[futureHead:futureTail]
-
-        book.includeSample(featurePattern, futurePattern)
-
-    if showTable:
-        book.showAllInfo()
-        print()
-
-    return book
-
-
-def _calculateRewardFromPattern(positionType, accPattern: str):
+def calculateRewardFromPattern(positionType, accPattern: str):
     if positionType == POSITION_NONE:
         return NO_EFFECT
     x = sum([GET_MONEYZ if x == UP_BOX else LOSE_MONEYZ for x in accPattern]
@@ -42,7 +21,7 @@ def getStateBestActionAndUtility(state: State, accPattern: str, remainingDepth):
     bestAction = None
 
     for action in state.actions:
-        newAccPattern = accPattern+state.pattern[-FUTURE_LEN:]
+        newAccPattern = accPattern+state.pattern[-conf.futureLength:]
         newRemaindingDepth = remainingDepth-1
 
         if action.type == ACTION_CLOSE:
@@ -70,7 +49,7 @@ def getActionUtility(action: Action, accPattern: str, remainingDepth, cacheTable
     currentPosition = action.fromState.position
 
     if remainingDepth == 0:
-        return _calculateRewardFromPattern(currentPosition, accPattern)
+        return calculateRewardFromPattern(currentPosition, accPattern)
 
     utility = 0
     for outcome in action.validOutcomes.items():
@@ -80,7 +59,7 @@ def getActionUtility(action: Action, accPattern: str, remainingDepth, cacheTable
 
         if DEBUG:
             print('\t'*(UTIL_DEPTH - remainingDepth), newState.pattern[-1], f'(choose {bestAction.type}) {bestUtil:.3f} * {prob:.3f}')
-            if remainingDepth == UTIL_DEPTH:
+            if remainingDepth == conf.utilDepth:
                 print("="*20)
 
     cacheTable[(action, accPattern, remainingDepth)] = utility
@@ -108,18 +87,21 @@ def printStateUtilities(state:State, actionUtils:dict):
 def getStateUtilityDict(state:State):
     utilOfActionType = {}
     for action in state.actions:
-        utilOfActionType[action.type] = getActionUtility(action, '', UTIL_DEPTH)
+        utilOfActionType[action.type] = getActionUtility(action, '', conf.utilDepth)
     return utilOfActionType
 
 
 if __name__ == '__main__':
     startTime = time()
     FILE_NAME = argv[1]
-    PAST_LEN = 5
-    FUTURE_LEN = 3
-    UTIL_DEPTH = 6
-    print(f'FILE {FILE_NAME} --- WINDOW ({PAST_LEN},{FUTURE_LEN}) --- UTIL_DEPTH {UTIL_DEPTH} --- DEBUG {DEBUG}\n')
-    book = craftBook(FILE_NAME, PAST_LEN, FUTURE_LEN, True)
+    conf.patternLength = 5
+    conf.futureLength = 3
+    conf.utilDepth = 6
+    conf.debug = False
+    print(f'FILE {FILE_NAME} --- WINDOW ({conf.patternLength},{conf.futureLength}) --- UTIL_DEPTH {conf.utilDepth} --- DEBUG {conf.debug}\n')
+    
+    sequence = loadSequence(FILE_NAME)
+    book = craftBook(sequence, conf.patternLength, conf.futureLength, True)
 
     for startPattern in book.counterOf.keys():
 
