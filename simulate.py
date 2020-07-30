@@ -13,18 +13,18 @@ from sys import argv
 
 from config import Config as conf, WindowShape
 from decision import getStateBestActionAndUtility, getPositionReward
-from renko import loadSequence
+from renko import loadSequence, RenkoSnapEnum
 from stats import PositionEnum, ActionEnum, Action, State
 from utils import craftBook
 
 if __name__ == "__main__":
     filename = argv[1]
     conf.window = WindowShape(*map(int, argv[2:4]))
-    
+
     trainRatio = 0.8
     testRatio = 1 - trainRatio
 
-    dataset = loadSequence(filename)
+    dataset = loadSequence(RenkoSnapEnum.SMALL, filename)
     trainLength = int(len(dataset) * trainRatio)
 
     trainDataset = dataset[:trainLength]

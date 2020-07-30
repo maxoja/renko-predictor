@@ -2,7 +2,7 @@ from sys import argv
 
 from config import Config as conf
 from decision import getActionUtility
-from renko import loadSequence
+from renko import loadSequence, RenkoSnapEnum
 from stats import KnowledgeBook, State, PositionEnum, ActionEnum
 from utils import craftBook, argmaxDict, startTimer, timeSinceStart
 
@@ -30,7 +30,7 @@ if __name__ == '__main__':
     print(conf.getStringInfo())
     
     startTimer()
-    dataset = loadSequence(FILE_NAME)
+    dataset = loadSequence(RenkoSnapEnum.SMALL, FILE_NAME)
     book = craftBook(dataset, conf.window, True)
 
     for startPattern in book.counterOf.keys():
