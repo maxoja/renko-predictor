@@ -14,17 +14,18 @@ from sys import argv
 from config import Config as conf, WindowShape
 from decision import getStateBestActionAndUtility, getPositionReward
 from renko import loadSequence, RenkoSnapEnum
-from stats import PositionEnum, ActionEnum, Action, State
+from stats import PositionType, ActionType, Action, State
 from utils import craftBook
 
 if __name__ == "__main__":
-    filename = argv[1]
-    conf.window = WindowShape(*map(int, argv[2:4]))
+    folder, filename = argv[1], argv[2]
+    conf.window = WindowShape(*map(int, argv[3:5]))
+    conf.renkoSnapMode = folder
 
     trainRatio = 0.8
     testRatio = 1 - trainRatio
 
-    dataset = loadSequence(RenkoSnapEnum.SMALL, filename)
+    dataset = loadSequence(folder, filename)
     trainLength = int(len(dataset) * trainRatio)
 
     trainDataset = dataset[:trainLength]
@@ -32,25 +33,29 @@ if __name__ == "__main__":
 
     book = craftBook(trainDataset, conf.window, True)
 
-    currentPosition = PositionEnum.NONE
+    currentPosition = PositionType.NONE
     openIndex = None
     totalProfit = 0
     phaseCount = 0
-    for i in range(len(testDataset) - conf.window.past):
+    shiftIfLargeSnap = 1 if conf.renkoSnapMode == RenkoSnapEnum.LARGE else 0
+
+    print(currentPosition)
+    for i in range(shiftIfLargeSnap, len(testDataset) - conf.window.past):
         oldPosition = currentPosition
         pattern = testDataset[i:i+conf.window.past]
 
         currentState = State.create(book, pattern, oldPosition)
         action, util = getStateBestActionAndUtility(currentState, '', conf.utilDepth)
+        print(currentState, oldPosition)
         newPosition = Action.getResultPositionStatus(currentPosition, action.type)
 
         # sum up result
-        if action.type == ActionEnum.CLOSE:
-            sequenceSinceOpen = testDataset[openIndex:i+conf.window.past]
+        if action.type == ActionType.CLOSE:
+            sequenceSinceOpen = testDataset[openIndex-shiftIfLargeSnap:i+conf.window.past]
             phaseCount += 1
             totalProfit += getPositionReward(oldPosition, sequenceSinceOpen)
             openIndex = None
-        elif action.type in [ActionEnum.BULL, ActionEnum.BEAR]:
+        elif action.type in [ActionType.BULL, ActionType.BEAR]:
             openIndex = i+conf.window.past
 
         currentPosition = newPosition
