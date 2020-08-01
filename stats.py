@@ -2,6 +2,7 @@ from enum import Enum
 from collections import Counter
 from typing import List
 
+from config import WindowShape
 
 class PositionType(Enum):
     NONE = "POS_NONE"
@@ -45,6 +46,28 @@ class KnowledgeBook:
                 prob = self.getProbOfNextPattern(pattern, nextPattern)
                 strFigures.append(f'{nextPattern}({prob:.0%})')
             print(pattern, *sorted(strFigures), self.getPatternOccurrence(pattern))
+
+    @staticmethod 
+    def craft(sequence, windowShape:WindowShape, showTable=True):
+        renko = sequence
+        book = KnowledgeBook()
+
+        for i in range(len(renko) - windowShape.combinedSize):
+            pastHead = i
+            pastTail = pastHead + windowShape.past
+            featurePattern = renko[pastHead: pastTail]
+
+            futureHead = pastTail
+            futureTail = futureHead + windowShape.future
+            futurePattern = renko[futureHead:futureTail]
+
+            book.includeSample(featurePattern, futurePattern)
+
+        if showTable:
+            book.showAllInfo()
+            print()
+
+        return book
 
 
 class State:

@@ -14,8 +14,7 @@ from sys import argv
 from config import Config as conf, WindowShape
 from decision import getStateBestActionAndUtility, getPositionReward
 from renko import loadSequence, RenkoSnapEnum
-from stats import PositionType, ActionType, Action, State
-from utils import craftBook
+from stats import KnowledgeBook, PositionType, ActionType, Action, State
 
 if __name__ == "__main__":
     folder, filename = argv[1], argv[2]
@@ -31,7 +30,7 @@ if __name__ == "__main__":
     trainDataset = dataset[:trainLength]
     testDataset = dataset[trainLength:]
 
-    book = craftBook(trainDataset, conf.window, True)
+    book = KnowledgeBook.craft(trainDataset, conf.window, True)
 
     currentPosition = PositionType.NONE
     openIndex = None
@@ -62,7 +61,7 @@ if __name__ == "__main__":
     print("Total profit", totalProfit)
     print("Phase count", phaseCount)
     print("Average Profit", totalProfit/phaseCount)
-        
+
 
 
 

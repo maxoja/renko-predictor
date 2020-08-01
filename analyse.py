@@ -32,7 +32,7 @@ if __name__ == '__main__':
     
     startTimer()
     dataset = loadSequence(FOLDER, FILE_NAME)
-    book = craftBook(dataset, conf.window, True)
+    book = KnowledgeBook.craft(dataset, conf.window, True)
 
     for startPattern in book.counterOf.keys():
         startState = State.create(book, startPattern, PositionType.NONE)
