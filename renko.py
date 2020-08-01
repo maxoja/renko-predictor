@@ -1,20 +1,14 @@
-class RenkoBoxType(str):
-    pass
+from enum import Enum
+
+class RenkoBoxType(str, Enum):
+    UP = "+"
+    DOWN = "-"
+    SIDE = "."
 
 
-class RenkoBoxEnum:
-    UP = RenkoBoxType("+")
-    DOWN = RenkoBoxType("-")
-    SIDE = RenkoBoxType(".")
-
-
-class RenkoSnapMode(str):
-    pass
-
-
-class RenkoSnapEnum:
-    SMALL = RenkoSnapMode("small")
-    LARGE = RenkoSnapMode("large")
+class RenkoSnapMode(str, Enum):
+    SMALL = "small"
+    LARGE = "large"
 
 
 def loadSequence(snapMode: RenkoSnapMode, filename: str):

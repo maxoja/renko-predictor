@@ -1,4 +1,4 @@
-from renko import RenkoSnapEnum, RenkoSnapMode
+from renko import RenkoSnapMode
 
 class WindowShape:
     def __init__(self, past, future):
@@ -18,7 +18,7 @@ class WindowShape:
 
 
 class Config:
-    renkoSnapMode: RenkoSnapMode = RenkoSnapEnum.SMALL
+    renkoSnapMode: RenkoSnapMode = RenkoSnapMode.SMALL
     window: WindowShape = WindowShape(3,1)
     utilDepth: int = 5
     debug: bool = False

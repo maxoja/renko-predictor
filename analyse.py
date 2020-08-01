@@ -2,7 +2,7 @@ from sys import argv
 
 from config import Config as conf
 from decision import getActionUtility
-from renko import loadSequence, RenkoSnapEnum
+from renko import loadSequence
 from stats import KnowledgeBook, State, PositionType, ActionType
 from utils import argmaxDict, startTimer, timeSinceStart
 

@@ -13,7 +13,7 @@ from sys import argv
 
 from config import Config as conf, WindowShape
 from decision import getStateBestActionAndUtility, getPositionReward
-from renko import loadSequence, RenkoSnapEnum
+from renko import loadSequence, RenkoBoxType, RenkoSnapMode
 from stats import KnowledgeBook, PositionType, ActionType, Action, State
 
 if __name__ == "__main__":
@@ -36,7 +36,7 @@ if __name__ == "__main__":
     openIndex = None
     totalProfit = 0
     phaseCount = 0
-    shiftIfLargeSnap = 1 if conf.renkoSnapMode == RenkoSnapEnum.LARGE else 0
+    shiftIfLargeSnap = 1 if conf.renkoSnapMode == RenkoSnapMode.LARGE else 0
 
     for i in range(shiftIfLargeSnap, len(testDataset) - conf.window.past):
         oldPosition = currentPosition
