@@ -2,8 +2,8 @@ from sys import argv
 
 from config import Config as conf
 from decision import getActionUtility
-from renko import loadSequence
-from stats import KnowledgeBook, State, PositionEnum, ActionEnum
+from renko import loadSequence, RenkoSnapEnum
+from stats import KnowledgeBook, State, PositionType, ActionType
 from utils import craftBook, argmaxDict, startTimer, timeSinceStart
 
 
@@ -18,23 +18,24 @@ def printStateUtilities(state:State, actionUtils:dict):
     bestActionType = argmaxDict(actionUtils)
     occurrence = book.getPatternOccurrence(startPattern)
     print(f'{state.pattern} : ',end='')
-    print(f'bull {actionUtils[ActionEnum.BULL]: 4.2f}    ',end='')
-    print(f'bear {actionUtils[ActionEnum.BEAR]: 4.2f}    ', end='')
-    print(f'none {actionUtils[ActionEnum.NONE]: 4.2f}    ', end='')
+    print(f'bull {actionUtils[ActionType.BULL]: 4.2f}    ',end='')
+    print(f'bear {actionUtils[ActionType.BEAR]: 4.2f}    ', end='')
+    print(f'none {actionUtils[ActionType.NONE]: 4.2f}    ', end='')
     print(f'({occurrence}) choose {bestActionType}')
 
 
 if __name__ == '__main__':
-    FILE_NAME = argv[1]
-    print('Dataset file:', FILE_NAME)
+    FOLDER, FILE_NAME = argv[1], argv[2]
+    conf.renkoSnapMode = FOLDER
+    print('Dataset file:', FOLDER, FILE_NAME)
     print(conf.getStringInfo())
     
     startTimer()
-    dataset = loadSequence(FILE_NAME)
+    dataset = loadSequence(FOLDER, FILE_NAME)
     book = craftBook(dataset, conf.window, True)
 
     for startPattern in book.counterOf.keys():
-        startState = State.create(book, startPattern, PositionEnum.NONE)
+        startState = State.create(book, startPattern, PositionType.NONE)
         utilOfActionType = getStateUtilityDict(startState)
         printStateUtilities(startState, utilOfActionType)
     

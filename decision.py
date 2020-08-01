@@ -1,21 +1,41 @@
 from math import inf
 
 from config import Config as conf
-from renko import RenkoBoxEnum
-from stats import State, Action, PositionEnum, PositionType, ActionEnum
+from renko import RenkoBoxEnum, RenkoSnapEnum
+from stats import State, Action, PositionType, ActionType
 
 
 REWARD_OF = {
-    (PositionEnum.BULL, RenkoBoxEnum.UP): 1,
-    (PositionEnum.BULL, RenkoBoxEnum.DOWN): -1,
-    (PositionEnum.BEAR, RenkoBoxEnum.UP): -1,
-    (PositionEnum.BEAR, RenkoBoxEnum.DOWN): 1
+    RenkoSnapEnum.SMALL: {
+        (PositionType.BULL, RenkoBoxEnum.UP): 1,
+        (PositionType.BULL, RenkoBoxEnum.DOWN): -1,
+        (PositionType.BEAR, RenkoBoxEnum.UP): -1,
+        (PositionType.BEAR, RenkoBoxEnum.DOWN): 1
+    },
+    RenkoSnapEnum.LARGE: {
+        (PositionType.BULL, RenkoBoxEnum.UP+RenkoBoxEnum.UP): 1,
+        (PositionType.BULL, RenkoBoxEnum.DOWN+RenkoBoxEnum.UP): 2,
+        (PositionType.BULL, RenkoBoxEnum.DOWN+RenkoBoxEnum.DOWN): -1,
+        (PositionType.BULL, RenkoBoxEnum.UP+RenkoBoxEnum.DOWN): -2,
+        (PositionType.BEAR, RenkoBoxEnum.UP+RenkoBoxEnum.UP): -1,
+        (PositionType.BEAR, RenkoBoxEnum.DOWN+RenkoBoxEnum.UP): -2,
+        (PositionType.BEAR, RenkoBoxEnum.DOWN+RenkoBoxEnum.DOWN): 1,
+        (PositionType.BEAR, RenkoBoxEnum.UP+RenkoBoxEnum.DOWN): 2,
+    }
 }
+
 
 def getPositionReward(position:PositionType, patternSinceOpen: str) -> float:
     reward = 0
-    for box in patternSinceOpen:
-        reward += REWARD_OF[(position, box)]
+    rewardDict = REWARD_OF[conf.renkoSnapMode]
+
+    for i, box in enumerate(patternSinceOpen):
+        if conf.renkoSnapMode == RenkoSnapEnum.SMALL:
+            reward += rewardDict[(position, box)]
+        elif conf.renkoSnapMode == RenkoSnapEnum.LARGE:
+            if i == 0: continue
+            reward += rewardDict[(position, patternSinceOpen[i-1:i+1])]
+
     return reward
 
 
@@ -24,13 +44,16 @@ def getStateBestActionAndUtility(state: State, patternSinceOpen: str, remainingD
     bestAction = None
 
     for action in state.actions:
-        newAccPattern = patternSinceOpen+state.pattern[-conf.window.future:]
+        if conf.renkoSnapMode == RenkoSnapEnum.SMALL:
+            newAccPattern = patternSinceOpen+state.pattern[-conf.window.future:]
+        elif conf.renkoSnapMode == RenkoSnapEnum.LARGE:
+            newAccPattern = patternSinceOpen+state.pattern[-conf.window.future-(1 if len(patternSinceOpen) == 0 else 0):]
         newRemaindingDepth = remainingDepth-1
 
-        if action.type == ActionEnum.CLOSE:
+        if action.type == ActionType.CLOSE:
             newRemaindingDepth = 0
 
-        if state.position == PositionEnum.NONE:
+        if state.position == PositionType.NONE:
             newAccPattern = ''
 
         utility = getActionUtility(action, newAccPattern, newRemaindingDepth)

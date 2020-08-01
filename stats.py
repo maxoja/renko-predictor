@@ -1,28 +1,24 @@
+from enum import Enum
 from collections import Counter
 from typing import List
 
 
-class PositionType(str):
-    pass
+class PositionType(Enum):
+    NONE = "POS_NONE"
+    BULL = "POS_BULL"
+    BEAR = "POS_BEAR"
+    INVALID = "POS_INVALID"
 
-class PositionEnum:
-    NONE = PositionType("POS_NONE")
-    BULL = PositionType("POS_BULL")
-    BEAR = PositionType("POS_BEAR")
-    INVALID = PositionType("POS_INVALID")
 
-class ActionType(str):
-    pass
-
-class ActionEnum:
-    NONE = ActionType("ACT_NONE")
-    BULL = ActionType("ACT_BULL")
-    BEAR = ActionType("ACT_BEAR")
-    CLOSE = ActionType("ACT_CLOSE")
+class ActionType(Enum):
+    NONE = "ACT_NONE"
+    BULL = "ACT_BULL"
+    BEAR = "ACT_BEAR"
+    CLOSE = "ACT_CLOSE"
 
     @staticmethod
-    def getAll() -> List[ActionType]:
-        return [ActionEnum.NONE, ActionEnum.BULL, ActionEnum.BEAR, ActionEnum.CLOSE]
+    def getAll():
+        return [ActionType.NONE, ActionType.BULL, ActionType.BEAR, ActionType.CLOSE]
 
 class KnowledgeBook:
     def __init__(self):
@@ -77,7 +73,7 @@ class State:
         state = State(pattern, position, actions)
         State._updateCache(pattern, position, state)
 
-        for actionType in ActionEnum.getAll():
+        for actionType in ActionType.getAll():
             newAction = Action.create(book, state, actionType)
             if not newAction is None:
                 actions.append(newAction)
@@ -107,19 +103,19 @@ class Action:
     
     @staticmethod
     def getResultPositionStatus(currentPosition:PositionType, actionType:ActionType):
-        if actionType == ActionEnum.NONE:
+        if actionType == ActionType.NONE:
             return currentPosition
 
-        if (actionType, currentPosition) == (ActionEnum.BULL, PositionEnum.NONE):
-            return PositionEnum.BULL
+        if (actionType, currentPosition) == (ActionType.BULL, PositionType.NONE):
+            return PositionType.BULL
 
-        if (actionType, currentPosition) == (ActionEnum.BEAR, PositionEnum.NONE):
-            return PositionEnum.BEAR
+        if (actionType, currentPosition) == (ActionType.BEAR, PositionType.NONE):
+            return PositionType.BEAR
 
-        if actionType == ActionEnum.CLOSE and currentPosition in [PositionEnum.BULL, PositionEnum.BEAR]:
-            return PositionEnum.NONE
+        if actionType == ActionType.CLOSE and currentPosition in [PositionType.BULL, PositionType.BEAR]:
+            return PositionType.NONE
 
-        return PositionEnum.INVALID
+        return PositionType.INVALID
 
     @staticmethod
     def create(book:KnowledgeBook, currentState:State, actionType:ActionType):
@@ -130,7 +126,7 @@ class Action:
         currentPosition = currentState.position
         newPosition = Action.getResultPositionStatus(currentPosition, actionType)
 
-        if newPosition == PositionEnum.INVALID:
+        if newPosition == PositionType.INVALID:
             return None
 
         outcomes = {}
