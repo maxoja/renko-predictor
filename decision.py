@@ -116,3 +116,34 @@ class PositionSnapshot:
                 reward += rewardDict[(self.type, (self.preSequence + self.sequence)[i-1:i+1])]
 
         return reward
+
+
+class PositionIndexedSnapshot:
+    def __init__(self, seq, positionType, startIndex, preSequenceIndex=None, endIndex=None):
+        self.seq = seq
+        self.type = positionType
+        self.start = startIndex
+        self.pre = startIndex if preSequenceIndex is None else preSequenceIndex
+        self.end = endIndex
+        
+    def setEndIndex(self, endIndex):
+        self.end = endIndex
+
+    def checkReward(self, renkoMode:RenkoSnapMode) -> float:
+        reward = 0
+        rewardDict = REWARD_OF[renkoMode]
+        sequence = self.seq[self.pre: self.end]
+    
+        for i, box in enumerate(sequence):
+            if renkoMode == RenkoSnapMode.SMALL:
+                reward += rewardDict[(self.type, box)]
+            elif renkoMode == RenkoSnapMode.LARGE:
+                if i == 0: continue
+                reward += rewardDict[(self.type, (sequence)[i-1:i+1])]
+
+        return reward
+
+    @staticmethod
+    def NONE():
+        return PositionIndexedSnapshot('', PositionType.NONE, None)
+    
