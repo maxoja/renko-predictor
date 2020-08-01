@@ -93,3 +93,26 @@ def getActionUtility(action: Action, patternSinceOpen: str, remainingDepth: int,
 
     cacheTable[(action, patternSinceOpen, remainingDepth)] = utility
     return utility
+
+
+class PositionSnapshot:
+    def __init__(self, positionType:PositionType, preSequence:str=''):
+        self.type = positionType
+        self.sequence:str = ''
+        self.preSequence:str = preSequence
+
+    def extendSequence(self, extension:str):
+        self.sequence += extension
+
+    def checkReward(self, renkoMode:RenkoSnapMode) -> float:
+        reward = 0
+        rewardDict = REWARD_OF[renkoMode]
+    
+        for i, box in enumerate(self.preSequence + self.sequence):
+            if renkoMode == RenkoSnapMode.SMALL:
+                reward += rewardDict[(self.type, box)]
+            elif renkoMode == RenkoSnapMode.LARGE:
+                if i == 0: continue
+                reward += rewardDict[(self.type, (self.preSequence + self.sequence)[i-1:i+1])]
+
+        return reward
