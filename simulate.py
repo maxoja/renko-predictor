@@ -39,17 +39,16 @@ if __name__ == "__main__":
     phaseCount = 0
     shiftIfLargeSnap = 1 if conf.renkoSnapMode == RenkoSnapEnum.LARGE else 0
 
-    print(currentPosition)
     for i in range(shiftIfLargeSnap, len(testDataset) - conf.window.past):
         oldPosition = currentPosition
         pattern = testDataset[i:i+conf.window.past]
 
         currentState = State.create(book, pattern, oldPosition)
         action, util = getStateBestActionAndUtility(currentState, '', conf.utilDepth)
-        print(currentState, oldPosition)
+        if not openIndex is None and i+conf.window.past - openIndex == conf.utilDepth:
+            action = Action.create(book, currentState, ActionType.CLOSE)
         newPosition = Action.getResultPositionStatus(currentPosition, action.type)
 
-        # sum up result
         if action.type == ActionType.CLOSE:
             sequenceSinceOpen = testDataset[openIndex-shiftIfLargeSnap:i+conf.window.past]
             phaseCount += 1
