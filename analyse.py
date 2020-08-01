@@ -4,7 +4,7 @@ from config import Config as conf
 from decision import getActionUtility
 from renko import loadSequence, RenkoSnapEnum
 from stats import KnowledgeBook, State, PositionType, ActionType
-from utils import craftBook, argmaxDict, startTimer, timeSinceStart
+from utils import argmaxDict, startTimer, timeSinceStart
 
 
 def getStateUtilityDict(state:State):
