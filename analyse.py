@@ -1,9 +1,9 @@
 from sys import argv
 
 from config import Config as conf
-from decision import getActionUtility
+from decision import getActionUtility,State, PositionType, ActionType
 from renko import loadSequence
-from stats import KnowledgeBook, State, PositionType, ActionType
+from stats import KnowledgeBook
 from utils import argmaxDict, startTimer, timeSinceStart
 
 
