@@ -38,7 +38,43 @@ class SimulationResult:
         print("Average Profit", average)
 
 
+class HoldingPosition:
+    def __init__(self, renkoMode):
+        self.renkoMode = renkoMode
+        self.type = PositionType.NONE
+        self.seqSinceOpen = ''
+        self.preSeq = ''
+    
+    def _jointSeq(self):
+        if self.renkoMode == RenkoSnapMode.SMALL: return self.seqSinceOpen
+        return self.preSeq + self.seqSinceOpen
 
+    def shouldCloseNow(self):
+        return len(self.seqSinceOpen) >= conf.utilDepth
+
+    def update(self, newSeq):
+        if self.type != PositionType.NONE:
+            self.seqSinceOpen += newSeq
+
+    def close(self):
+        profit = getPositionReward(self.type, self._jointSeq())
+        phase = PhaseInfo(self._jointSeq(), self.type, profit)
+        self.type = PositionType.NONE
+        self.seqSinceOpen = ''
+        self.preSeq = ''
+        return phase
+
+    def openBull(self, preSeq):
+        self.type = PositionType.BULL
+        self.seqSinceOpen = ''
+        self.preSeq = preSeq
+
+    def openBear(self, preSeq):
+        self.type = PositionType.BEAR
+        self.seqSinceOpen = ''
+        self.preSeq = preSeq
+
+    
 if __name__ == "__main__":
     folder, filename = argv[1], argv[2]
     conf.window = WindowShape(*map(int, argv[3:5]))
@@ -52,43 +88,36 @@ if __name__ == "__main__":
 
     trainDataset = dataset[:trainLength]
     testDataset = dataset[trainLength:]
-
     book = KnowledgeBook.craft(trainDataset, conf.window, True)
 
-    currentPosition = PositionType.NONE
-    openIndex = None
-    shiftIfLargeSnap = 1 if conf.renkoSnapMode == RenkoSnapMode.LARGE else 0
-
     result = SimulationResult()
+    holdingPos = HoldingPosition(conf.renkoSnapMode)
 
-    for i in range(shiftIfLargeSnap, len(testDataset) - conf.window.past):
-        oldPosition = currentPosition
-        pattern = testDataset[i:i+conf.window.past]
+    for ib in range(conf.window.past, len(testDataset)):
+        ia = ib - conf.window.past
+        newBox = testDataset[ib-1]
+        pastWin = testDataset[ia:ib]
 
-        currentState = State.create(book, pattern, oldPosition)
-        action, util = getStateBestActionAndUtility(currentState, '', conf.utilDepth)
-        if not openIndex is None and i+conf.window.past - openIndex == conf.utilDepth:
-            action = Action.create(book, currentState, ActionType.CLOSE)
-        newPosition = Action.getResultPositionStatus(currentPosition, action.type)
+        # adding new box
+        holdingPos.update(newBox)
 
+        # make decision after new box
+        state = State.create(book, pastWin, holdingPos.type)
+        if holdingPos.shouldCloseNow():
+            action = Action.create(book, state, ActionType.CLOSE)
+        else:
+            action, _ = getStateBestActionAndUtility(state, '', conf.utilDepth)
+
+        # perform the decided action
         if action.type == ActionType.CLOSE:
-            sequenceSinceOpen = testDataset[openIndex-shiftIfLargeSnap:i+conf.window.past]
-            profitOfPhase = getPositionReward(oldPosition, sequenceSinceOpen)
-            closedPhase = PhaseInfo(sequenceSinceOpen, oldPosition, profitOfPhase)
+            closedPhase = holdingPos.close()
             result.addPhase(closedPhase)
-            openIndex = None
-        elif action.type in [ActionType.BULL, ActionType.BEAR]:
-            openIndex = i+conf.window.past
 
-        currentPosition = newPosition
+        elif action.type == ActionType.BULL:
+            holdingPos.openBull(newBox)
 
-    # result.printPhases()
+        elif action.type == ActionType.BEAR:
+            holdingPos.openBear(newBox)
+
+    result.printPhases()
     result.printResult()
-
-
-
-
-
-
-
-
