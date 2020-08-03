@@ -8,21 +8,26 @@ from decision import getStateBestActionAndUtility, getPositionReward, \
                         PositionType, ActionType, Action, State
 
 
-class PhaseInfo:
-    def __init__(self, pattern:str, position:PositionType, profit:float):
-        self.pattern = pattern if conf.renkoSnapMode is RenkoSnapMode.SMALL else pattern[1:]
+class PositionRecord:
+    def __init__(self, pattern:str, position:PositionType, profit:float, reknoMode:RenkoSnapMode):
+        self.pattern = pattern
         self.position = position
         self.profit = profit
+        self.renkoMode = reknoMode
 
     def __str__(self):
-        return f' [{format(self.pattern,f">{conf.utilDepth}s")}]  {self.position.name:5s} {self.profit:6.2f}'
+        if self.renkoMode == RenkoSnapMode.SMALL:
+            fPattern = format(self.pattern,f"<{conf.utilDepth}s")
+        else:
+            fPattern = format((self.pattern[0] + '|' + self.pattern[1:]),f"<{conf.utilDepth+2}s")
+        return f' [{fPattern}]  {self.position.name:5s} {self.profit:6.2f}'
 
 
 class SimulationResult:
     def __init__(self):
-        self.phases:List[PhaseInfo] = []
+        self.phases:List[PositionRecord] = []
 
-    def addPhase(self, phase:PhaseInfo):
+    def addPhase(self, phase:PositionRecord):
         self.phases.append(phase)
 
     def printPhases(self):
@@ -38,7 +43,7 @@ class SimulationResult:
         print("Average Profit", average)
 
 
-class HoldingPosition:
+class PositionTracker:
     def __init__(self, renkoMode):
         self.renkoMode = renkoMode
         self.type = PositionType.NONE
@@ -58,7 +63,7 @@ class HoldingPosition:
 
     def close(self):
         profit = getPositionReward(self.type, self._jointSeq())
-        phase = PhaseInfo(self._jointSeq(), self.type, profit)
+        phase = PositionRecord(self._jointSeq(), self.type, profit, self.renkoMode)
         self.type = PositionType.NONE
         self.seqSinceOpen = ''
         self.preSeq = ''
@@ -91,15 +96,15 @@ if __name__ == "__main__":
     book = KnowledgeBook.craft(trainDataset, conf.window, True)
 
     result = SimulationResult()
-    holdingPos = HoldingPosition(conf.renkoSnapMode)
+    holdingPos = PositionTracker(conf.renkoSnapMode)
 
-    for ib in range(conf.window.past, len(testDataset)):
-        ia = ib - conf.window.past
-        newBox = testDataset[ib-1]
-        pastWin = testDataset[ia:ib]
+    for iEnd in range(conf.window.past, len(testDataset)):
+        iBegin = iEnd - conf.window.past
+        latestBox = testDataset[iEnd-1]
+        pastWin = testDataset[iBegin:iEnd]
 
         # adding new box
-        holdingPos.update(newBox)
+        holdingPos.update(latestBox)
 
         # make decision after new box
         state = State.create(book, pastWin, holdingPos.type)
@@ -114,10 +119,10 @@ if __name__ == "__main__":
             result.addPhase(closedPhase)
 
         elif action.type == ActionType.BULL:
-            holdingPos.openBull(newBox)
+            holdingPos.openBull(latestBox)
 
         elif action.type == ActionType.BEAR:
-            holdingPos.openBear(newBox)
+            holdingPos.openBear(latestBox)
 
     result.printPhases()
     result.printResult()
