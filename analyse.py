@@ -1,10 +1,10 @@
 from sys import argv
 
 from config import Config as conf
-from decision import getActionUtility
-from renko import loadSequence, RenkoSnapEnum
-from stats import KnowledgeBook, State, PositionType, ActionType
-from utils import craftBook, argmaxDict, startTimer, timeSinceStart
+from decision import getActionUtility,State, PositionType, ActionType
+from renko import loadSequence
+from stats import KnowledgeBook
+from utils import argmaxDict, startTimer, timeSinceStart
 
 
 def getStateUtilityDict(state:State):
@@ -32,7 +32,7 @@ if __name__ == '__main__':
     
     startTimer()
     dataset = loadSequence(FOLDER, FILE_NAME)
-    book = craftBook(dataset, conf.window, True)
+    book = KnowledgeBook.craft(dataset, conf.window, True)
 
     for startPattern in book.counterOf.keys():
         startState = State.create(book, startPattern, PositionType.NONE)
